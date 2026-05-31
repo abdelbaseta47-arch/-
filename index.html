@@ -1,0 +1,45 @@
+أريد منك الآن تحويل كل التصميم والأكواد السابقة إلى مشروع Production Ready كامل جاهز للتشغيل مباشرة.
+
+المطلوب:
+
+1. تنظيم المشروع بالكامل في هيكل حقيقي:
+
+frontend/
+backend/
+database/
+supabase/
+docs/
+
+2. Backend FastAPI يجب أن يكون:
+- قابل للتشغيل مباشرة
+- يحتوي main.py واحد entry point
+- يحتوي requirements.txt
+- ربط حقيقي مع Supabase (ليس mock)
+- ربط فعلي بكل engines
+
+3. Frontend Next.js يجب أن:
+- يكون قابل للتشغيل
+- يحتوي pages أو app router كامل
+- يتصل بالـ backend API الحقيقي
+- يحتوي env variables
+
+4. Database:
+- ملف SQL واحد جاهز للتنفيذ في Supabase
+- مع seed data كامل IFRS COA
+
+5. إضافة:
+- .env.example
+- README.md يحتوي خطوات التشغيل خطوة بخطوة
+- Docker optional (إذا أمكن)
+
+6. أهم شرط:
+أريد المشروع قابل للتشغيل مباشرة بعد:
+npm install
+pip install -r requirements.txt
+uvicorn main:app
+
+بدون أي أجزاء ناقصة أو pseudocode.
+
+إذا كان هناك شيء ناقص، قم بإكماله بنفسك.
+
+أريد نسخة جاهزة للـ GitHub Production Project.
