@@ -76,70 +76,134 @@
 
     <div id="root"></div>
 
-    <!-- كود تطبيق الـ React والتحليلات المالية المدمجة -->
+    <!-- كود تطبيق الـ React والتحليلات المالية المدمجة والمعززة -->
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // ميزان مراجعة موسع وشامل نموذجياً ومتزن 100% وفقاً لمعايير IFRS الدولية
-        // إجمالي المدين = 1,580,000 ريال | إجمالي الدائن = 1,580,000 ريال
+        // قاعدة بيانات شاملة متعددة الفترات التاريخية (أبريل، مايو، يونيو 2026) متزنة 100% محاسبياً لتجربة محاكاة ديناميكية حية
         const defaultTrialBalance = [
-            // الأصول المتداولة
-            { code: "1111", nameAr: "النقدية في الخزينة الصندوق", nameEn: "Cash on Hand", debit: 45000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1112", nameAr: "البنوك - الحسابات الجارية بالريال", nameEn: "Cash at Banks - Current Accounts", debit: 140000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1113", nameAr: "استثمارات مالية قصيرة الأجل بقيمتها العادلة", nameEn: "Short-term Financial Investments", debit: 50000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1120", nameAr: "العملاء والذمم المدينة التجارية", nameEn: "Trade Receivables", debit: 135000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1125", nameAr: "مخصص خسائر ائتمانية متوقعة للعملاء (ECL)", nameEn: "Allowance for Expected Credit Losses", debit: 0, credit: 5000, category: "Assets", subCategory: "Current Assets" }, // حساب مقابل للأصول
-            { code: "1131", nameAr: "مخزون المواد الخام الأولية", nameEn: "Raw Materials Inventory", debit: 70000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1132", nameAr: "مخزون إنتاج تحت التشغيل", nameEn: "Work-in-Progress Inventory", debit: 40000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1133", nameAr: "مخزون السلع تامة الصنع الجاهزة للبيع", nameEn: "Finished Goods Inventory", debit: 110000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1140", nameAr: "أرصدة مدينة أخرى ومصاريف مدفوعة مقدماً", nameEn: "Prepaid Expenses & Other Debit Balances", debit: 15000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1150", nameAr: "حسابات مستحقة من أطراف ذات علاقة", nameEn: "Due from Related Parties", debit: 25000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            // ================== شهر أبريل 2026 (متزن عند 1,925,000 ريال) ==================
+            { code: "1111", nameAr: "النقدية في الخزينة الصندوق", nameEn: "Cash on Hand", debit: 92000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1112", nameAr: "البنوك - الحسابات الجارية بالريال", nameEn: "Cash at Banks - Current Accounts", debit: 220000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1113", nameAr: "استثمارات مالية قصيرة الأجل بقيمتها العادلة", nameEn: "Short-term Financial Investments", debit: 90000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1120", nameAr: "العملاء والذمم المدينة التجارية", nameEn: "Trade Receivables", debit: 160000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1125", nameAr: "مخصص خسائر ائتمانية متوقعة للعملاء (ECL)", nameEn: "Allowance for Expected Credit Losses", debit: 0, credit: 8000, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1131", nameAr: "مخزون المواد الخام الأولية", nameEn: "Raw Materials Inventory", debit: 75000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1132", nameAr: "مخزون إنتاج تحت التشغيل", nameEn: "Work-in-Progress Inventory", debit: 45000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1133", nameAr: "مخزون السلع تامة الصنع الجاهزة للبيع", nameEn: "Finished Goods Inventory", debit: 100000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1140", nameAr: "أرصدة مدينة أخرى ومصاريف مدفوعة مقدماً", nameEn: "Prepaid Expenses & Other Debit Balances", debit: 18000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1150", nameAr: "حسابات مستحقة من أطراف ذات علاقة", nameEn: "Due from Related Parties", debit: 28000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-04" },
+            { code: "1211", nameAr: "الأراضي والعقارات التشغيلية", nameEn: "Freehold Lands", debit: 300000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-04" },
+            { code: "1212", nameAr: "المباني والإنشاءات والمرافق الخاضعة للاستهلاك", nameEn: "Buildings and Facilities", debit: 150000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-04" },
+            { code: "1213", nameAr: "الآلات والمعدات ووسائل الإنتاج والتركيبات", nameEn: "Machinery and Equipment", debit: 200000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-04" },
+            { code: "1214", nameAr: "مجمع استهلاك الأصول الثابتة المتراكم", nameEn: "Accumulated Depreciation", debit: 0, credit: 50000, category: "Assets", subCategory: "Non-Current Assets", period: "2026-04" },
+            { code: "1220", nameAr: "الأصول غير الملموسة والشهرة والبرمجيات", nameEn: "Intangible Assets & Goodwill", debit: 50000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-04" },
+            { code: "2111", nameAr: "الموردون والذمم الدائنة التجارية", nameEn: "Trade Payables", debit: 0, credit: 88000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2112", nameAr: "الأرصدة الدائنة الأخرى والمصاريف المستحقة", nameEn: "Accrued Expenses & Other Credit Balances", debit: 0, credit: 22000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2113", nameAr: "دفعات مقبوضة مقدماً من العملاء", nameEn: "Contract Liabilities (Advances from Customers)", debit: 0, credit: 12000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2121", nameAr: "قروض وتسهيلات بنكية قصيرة الأجل", nameEn: "Short-term Loans and Facilities", debit: 0, credit: 50000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2130", nameAr: "مستحقات لأطراف ذات علاقة", nameEn: "Due to Related Parties", debit: 0, credit: 20000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2140", nameAr: "مخصص الزكاة الشرعية وضريبة الدخل المقدرة", nameEn: "Provision for Zakat & Income Tax", debit: 0, credit: 12000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-04" },
+            { code: "2211", nameAr: "التزامات تمويلية وقروض طويلة الأجل", nameEn: "Long-term Bank Loans", debit: 0, credit: 200000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-04" },
+            { code: "2220", nameAr: "مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)", nameEn: "Provision for Employee Terminal Benefits", debit: 0, credit: 38000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-04" },
+            { code: "3100", nameAr: "رأس المال المصرح به والمدفوع بالكامل", nameEn: "Paid-up Share Capital", debit: 0, credit: 750000, category: "Equity", subCategory: "Equity", period: "2026-04" },
+            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 60000, category: "Equity", subCategory: "Equity", period: "2026-04" },
+            { code: "3200", nameAr: "الأرباح المبقاة المدورة من سنوات سابقة", nameEn: "Retained Earnings", debit: 0, credit: 155000, category: "Equity", subCategory: "Equity", period: "2026-04" },
+            { code: "4110", nameAr: "إيرادات بيع المنتجات والسلع", nameEn: "Revenues from Goods Sold", debit: 0, credit: 380000, category: "Revenues", subCategory: "Revenues", period: "2026-04" },
+            { code: "4120", nameAr: "إيرادات تقديم الخدمات الفنية والصيانة", nameEn: "Revenues from Services Rendered", debit: 0, credit: 80000, category: "Revenues", subCategory: "Revenues", period: "2026-04" },
+            { code: "4150", nameAr: "خصومات ومسموحات مبيعات ممنوحة للعملاء", nameEn: "Sales Discounts & Allowances", debit: 12000, credit: 0, category: "Revenues", subCategory: "Revenues", period: "2026-04" },
+            { code: "5110", nameAr: "تكلفة المواد الخام المباشرة المستخدمة", nameEn: "Direct Materials Consumed", debit: 150000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-04" },
+            { code: "5120", nameAr: "تكلفة الأجور المباشرة والعمالة الإنتاجية", nameEn: "Direct Labor Costs", debit: 55000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-04" },
+            { code: "5130", nameAr: "مصاريف صناعية غير مباشرة وإيجار المصنع والتشغيل", nameEn: "Indirect Manufacturing Overheads", debit: 35000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-04" },
+            { code: "5211", nameAr: "رواتب ومنافع موظفي الإدارة العامة", nameEn: "Administrative Salaries & Employee Benefits", debit: 65000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-04" },
+            { code: "5212", nameAr: "إيجار المكاتب الإدارية والكهرباء والاتصالات", nameEn: "Office Rents, Utilities & Communications", debit: 25000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-04" },
+            { code: "5213", nameAr: "مصاريف التسويق والإعلانات والبيع والتوزيع", nameEn: "Marketing, Advertising & Distribution", debit: 18000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-04" },
+            { code: "5214", nameAr: "استهلاك الأصول الثابتة وإطفاء الفترة الحالي", nameEn: "Depreciation & Amortization Expense", debit: 10000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-04" },
+            { code: "5215", nameAr: "مصروف مخصص الديون والائتمان للفترة", nameEn: "ECL Provision Expense for the Period", debit: 4000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-04" },
+            { code: "5310", nameAr: "تكاليف تمويلية وفوائد بنكية مدفوعة", nameEn: "Finance Costs & Bank Interest Expense", debit: 15000, credit: 0, category: "Expenses", subCategory: "Finance", period: "2026-04" },
+            { code: "5410", nameAr: "مصروف الزكاة الشرعية وضريبة الدخل التقديرية", nameEn: "Zakat & Income Tax Expense for the Period", debit: 8000, credit: 0, category: "Expenses", subCategory: "Tax", period: "2026-04" },
 
-            // الأصول غير المتداولة
-            { code: "1211", nameAr: "الأراضي والعقارات التشغيلية", nameEn: "Freehold Lands", debit: 150000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
-            { code: "1212", nameAr: "المباني والإنشاءات والمرافق الخاضعة للاستهلاك", nameEn: "Buildings and Facilities", debit: 30000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
-            { code: "1213", nameAr: "الآلات والمعدات ووسائل الإنتاج والتركيبات", nameEn: "Machinery and Equipment", debit: 120000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
-            { code: "1214", nameAr: "مجمع استهلاك الأصول الثابتة المتراكم", nameEn: "Accumulated Depreciation", debit: 0, credit: 40000, category: "Assets", subCategory: "Non-Current Assets" }, // حساب مقابل للأصول غير المتداولة
-            { code: "1220", nameAr: "الأصول غير الملموسة والشهرة والبرمجيات", nameEn: "Intangible Assets & Goodwill", debit: 35000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+            // ================== شهر مايو 2026 (متزن عند 2,035,000 ريال) ==================
+            { code: "1111", nameAr: "النقدية في الخزينة الصندوق", nameEn: "Cash on Hand", debit: 50000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1112", nameAr: "البنوك - الحسابات الجارية بالريال", nameEn: "Cash at Banks - Current Accounts", debit: 250000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1113", nameAr: "استثمارات مالية قصيرة الأجل بقيمتها العادلة", nameEn: "Short-term Financial Investments", debit: 100000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1120", nameAr: "العملاء والذمم المدينة التجارية", nameEn: "Trade Receivables", debit: 180000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1125", nameAr: "مخصص خسائر ائتمانية متوقعة للعملاء (ECL)", nameEn: "Allowance for Expected Credit Losses", debit: 0, credit: 10000, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1131", nameAr: "مخزون المواد الخام الأولية", nameEn: "Raw Materials Inventory", debit: 80000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1132", nameAr: "مخزون إنتاج تحت التشغيل", nameEn: "Work-in-Progress Inventory", debit: 50000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1133", nameAr: "مخزون السلع تامة الصنع الجاهزة للبيع", nameEn: "Finished Goods Inventory", debit: 120000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1140", nameAr: "أرصدة مدينة أخرى ومصاريف مدفوعة مقدماً", nameEn: "Prepaid Expenses & Other Debit Balances", debit: 20000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1150", nameAr: "حسابات مستحقة من أطراف ذات علاقة", nameEn: "Due from Related Parties", debit: 30000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-05" },
+            { code: "1211", nameAr: "الأراضي والعقارات التشغيلية", nameEn: "Freehold Lands", debit: 300000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-05" },
+            { code: "1212", nameAr: "المباني والإنشاءات والمرافق الخاضعة للاستهلاك", nameEn: "Buildings and Facilities", debit: 150000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-05" },
+            { code: "1213", nameAr: "الآلات والمعدات ووسائل الإنتاج والتركيبات", nameEn: "Machinery and Equipment", debit: 200000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-05" },
+            { code: "1214", nameAr: "مجمع استهلاك الأصول الثابتة المتراكم", nameEn: "Accumulated Depreciation", debit: 0, credit: 60000, category: "Assets", subCategory: "Non-Current Assets", period: "2026-05" },
+            { code: "1220", nameAr: "الأصول غير الملموسة والشهرة والبرمجيات", nameEn: "Intangible Assets & Goodwill", debit: 50000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-05" },
+            { code: "2111", nameAr: "الموردون والذمم الدائنة التجارية", nameEn: "Trade Payables", debit: 0, credit: 95000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2112", nameAr: "الأرصدة الدائنة الأخرى والمصاريف المستحقة", nameEn: "Accrued Expenses & Other Credit Balances", debit: 0, credit: 25000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2113", nameAr: "دفعات مقبوضة مقدماً من العملاء", nameEn: "Contract Liabilities (Advances from Customers)", debit: 0, credit: 15000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2121", nameAr: "قروض وتسهيلات بنكية قصيرة الأجل", nameEn: "Short-term Loans and Facilities", debit: 0, credit: 50000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2130", nameAr: "مستحقات لأطراف ذات علاقة", nameEn: "Due to Related Parties", debit: 0, credit: 20000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2140", nameAr: "مخصص الزكاة الشرعية وضريبة الدخل المقدرة", nameEn: "Provision for Zakat & Income Tax", debit: 0, credit: 15000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-05" },
+            { code: "2211", nameAr: "التزامات تمويلية وقروض طويلة الأجل", nameEn: "Long-term Bank Loans", debit: 0, credit: 200000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-05" },
+            { code: "2220", nameAr: "مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)", nameEn: "Provision for Employee Terminal Benefits", debit: 0, credit: 40000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-05" },
+            { code: "3100", nameAr: "رأس المال المصرح به والمدفوع بالكامل", nameEn: "Paid-up Share Capital", debit: 0, credit: 750000, category: "Equity", subCategory: "Equity", period: "2026-05" },
+            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 60000, category: "Equity", subCategory: "Equity", period: "2026-05" },
+            { code: "3200", nameAr: "الأرباح المبقاة المدورة من سنوات سابقة", nameEn: "Retained Earnings", debit: 0, credit: 155000, category: "Equity", subCategory: "Equity", period: "2026-05" },
+            { code: "4110", nameAr: "إيرادات بيع المنتجات والسلع", nameEn: "Revenues from Goods Sold", debit: 0, credit: 450000, category: "Revenues", subCategory: "Revenues", period: "2026-05" },
+            { code: "4120", nameAr: "إيرادات تقديم الخدمات الفنية والصيانة", nameEn: "Revenues from Services Rendered", debit: 0, credit: 90000, category: "Revenues", subCategory: "Revenues", period: "2026-05" },
+            { code: "4150", nameAr: "خصومات ومسموحات مبيعات ممنوحة للعملاء", nameEn: "Sales Discounts & Allowances", debit: 15000, credit: 0, category: "Revenues", subCategory: "Revenues", period: "2026-05" },
+            { code: "5110", nameAr: "تكلفة المواد الخام المباشرة المستخدمة", nameEn: "Direct Materials Consumed", debit: 180000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-05" },
+            { code: "5120", nameAr: "تكلفة الأجور المباشرة والعمالة الإنتاجية", nameEn: "Direct Labor Costs", debit: 60000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-05" },
+            { code: "5130", nameAr: "مصاريف صناعية غير مباشرة وإيجار المصنع والتشغيل", nameEn: "Indirect Manufacturing Overheads", debit: 40000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-05" },
+            { code: "5211", nameAr: "رواتب ومنافع موظفي الإدارة العامة", nameEn: "Administrative Salaries & Employee Benefits", debit: 70000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-05" },
+            { code: "5212", nameAr: "إيجار المكاتب الإدارية والكهرباء والاتصالات", nameEn: "Office Rents, Utilities & Communications", debit: 25000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-05" },
+            { code: "5213", nameAr: "مصاريف التسويق والإعلانات والبيع والتوزيع", nameEn: "Marketing, Advertising & Distribution", debit: 20000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-05" },
+            { code: "5214", nameAr: "استهلاك الأصول الثابتة وإطفاء الفترة الحالي", nameEn: "Depreciation & Amortization Expense", debit: 15000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-05" },
+            { code: "5215", nameAr: "مصروف مخصص الديون والائتمان للفترة", nameEn: "ECL Provision Expense for the Period", debit: 5000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-05" },
+            { code: "5310", nameAr: "تكاليف تمويلية وفوائد بنكية مدفوعة", nameEn: "Finance Costs & Bank Interest Expense", debit: 15000, credit: 0, category: "Expenses", subCategory: "Finance", period: "2026-05" },
+            { code: "5410", nameAr: "مصروف الزكاة الشرعية وضريبة الدخل التقديرية", nameEn: "Zakat & Income Tax Expense for the Period", debit: 10000, credit: 0, category: "Expenses", subCategory: "Tax", period: "2026-05" },
 
-            // الالتزامات المتداولة
-            { code: "2111", nameAr: "الموردون والذمم الدائنة التجارية", nameEn: "Trade Payables", debit: 0, credit: 85000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2112", nameAr: "الأرصدة الدائنة الأخرى والمصاريف المستحقة", nameEn: "Accrued Expenses & Other Credit Balances", debit: 0, credit: 15000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2113", nameAr: "دفعات مقبوضة مقدماً من العملاء", nameEn: "Contract Liabilities (Advances from Customers)", debit: 0, credit: 10000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2121", nameAr: "قروض وتسهيلات بنكية قصيرة الأجل", nameEn: "Short-term Loans and Facilities", debit: 0, credit: 40000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2130", nameAr: "مستحقات لأطراف ذات علاقة", nameEn: "Due to Related Parties", debit: 0, credit: 20000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2140", nameAr: "مخصص الزكاة الشرعية وضريبة الدخل المقدرة", nameEn: "Provision for Zakat & Income Tax", debit: 0, credit: 12000, category: "Liabilities", subCategory: "Current Liabilities" },
-
-            // الالتزامات غير المتداولة
-            { code: "2211", nameAr: "التزامات تمويلية وقروض طويلة الأجل", nameEn: "Long-term Bank Loans", debit: 0, credit: 180000, category: "Liabilities", subCategory: "Non-Current Liabilities" },
-            { code: "2220", nameAr: "مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)", nameEn: "Provision for Employee Terminal Benefits", debit: 0, credit: 35000, category: "Liabilities", subCategory: "Non-Current Liabilities" },
-
-            // حقوق الملكية
-            { code: "3100", nameAr: "رأس المال المصرح به والمدفوع بالكامل", nameEn: "Paid-up Share Capital", debit: 0, credit: 500000, category: "Equity", subCategory: "Equity" },
-            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 50, category: "Equity", subCategory: "Equity" }, // 50,000
-            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 50000, category: "Equity", subCategory: "Equity" },
-            { code: "3200", nameAr: "الأرباح المبقاة المدورة من سنوات سابقة", nameEn: "Retained Earnings", debit: 0, credit: 103000, category: "Equity", subCategory: "Equity" },
-
-            // الإيرادات والمبيعات
-            { code: "4110", nameAr: "إيرادات بيع المنتجات والسلع", nameEn: "Revenues from Goods Sold", debit: 0, credit: 410000, category: "Revenues", subCategory: "Revenues" },
-            { code: "4120", nameAr: "إيرادات تقديم الخدمات الفنية والصيانة", nameEn: "Revenues from Services Rendered", debit: 0, credit: 75000, category: "Revenues", subCategory: "Revenues" },
-            { code: "4150", nameAr: "خصومات ومسموحات مبيعات ممنوحة للعملاء", nameEn: "Sales Discounts & Allowances", debit: 10000, credit: 0, category: "Revenues", subCategory: "Revenues" }, // حساب مقابل للإيرادات
-
-            // المصروفات المباشرة والتكاليف التشغيلية (تكلفة المبيعات)
-            { code: "5110", nameAr: "تكلفة المواد الخام المباشرة المستخدمة", nameEn: "Direct Materials Consumed", debit: 130000, credit: 0, category: "Expenses", subCategory: "COGS" },
-            { code: "5120", nameAr: "تكلفة الأجور المباشرة والعمالة الإنتاجية", nameEn: "Direct Labor Costs", debit: 50000, credit: 0, category: "Expenses", subCategory: "COGS" },
-            { code: "5130", nameAr: "مصاريف صناعية غير مباشرة وإيجار المصنع والتشغيل", nameEn: "Indirect Manufacturing Overheads", debit: 30000, credit: 0, category: "Expenses", subCategory: "COGS" },
-
-            // المصاريف الإدارية والعمومية والتسويقية (المصاريف التشغيلية OPEX)
-            { code: "5211", nameAr: "رواتب ومنافع موظفي الإدارة العامة", nameEn: "Administrative Salaries & Employee Benefits", debit: 55000, credit: 0, category: "Expenses", subCategory: "OPEX" },
-            { code: "5212", nameAr: "إيجار المكاتب الإدارية والكهرباء والاتصالات", nameEn: "Office Rents, Utilities & Communications", debit: 20000, credit: 0, category: "Expenses", subCategory: "OPEX" },
-            { code: "5213", nameAr: "مصاريف التسويق والإعلانات والبيع والتوزيع", nameEn: "Marketing, Advertising & Distribution", debit: 15000, credit: 0, category: "Expenses", subCategory: "OPEX" },
-            { code: "5214", nameAr: "استهلاك الأصول الثابتة وإطفاء الفترة الحالي", nameEn: "Depreciation & Amortization Expense", debit: 10000, credit: 0, category: "Expenses", subCategory: "OPEX" },
-            { code: "5215", nameAr: "مصروف مخصص الديون والائتمان للفترة", nameEn: "ECL Provision Expense for the Period", debit: 5000, credit: 0, category: "Expenses", subCategory: "OPEX" },
-
-            // تكاليف التمويل والزكاة والضرائب
-            { code: "5310", nameAr: "تكاليف تمويلية وفوائد بنكية مدفوعة", nameEn: "Finance Costs & Bank Interest Expense", debit: 12000, credit: 0, category: "Expenses", subCategory: "Finance" },
-            { code: "5410", nameAr: "مصروف الزكاة الشرعية وضريبة الدخل التقديرية", nameEn: "Zakat & Income Tax Expense for the Period", debit: 8000, credit: 0, category: "Expenses", subCategory: "Tax" }
+            // ================== شهر يونيو 2026 (متزن عند 2,192,000 ريال) ==================
+            { code: "1111", nameAr: "النقدية في الخزينة الصندوق", nameEn: "Cash on Hand", debit: 65000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1112", nameAr: "البنوك - الحسابات الجارية بالريال", nameEn: "Cash at Banks - Current Accounts", debit: 290000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1113", nameAr: "استثمارات مالية قصيرة الأجل بقيمتها العادلة", nameEn: "Short-term Financial Investments", debit: 110000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1120", nameAr: "العملاء والذمم المدينة التجارية", nameEn: "Trade Receivables", debit: 195000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1125", nameAr: "مخصص خسائر ائتمانية متوقعة للعملاء (ECL)", nameEn: "Allowance for Expected Credit Losses", debit: 0, credit: 12000, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1131", nameAr: "مخزون المواد الخام الأولية", nameEn: "Raw Materials Inventory", debit: 85000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1132", nameAr: "مخزون إنتاج تحت التشغيل", nameEn: "Work-in-Progress Inventory", debit: 55000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1133", nameAr: "مخزون السلع تامة الصنع الجاهزة للبيع", nameEn: "Finished Goods Inventory", debit: 130000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1140", nameAr: "أرصدة مدينة أخرى ومصاريف مدفوعة مقدماً", nameEn: "Prepaid Expenses & Other Debit Balances", debit: 22000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1150", nameAr: "حسابات مستحقة من أطراف ذات علاقة", nameEn: "Due from Related Parties", debit: 32000, credit: 0, category: "Assets", subCategory: "Current Assets", period: "2026-06" },
+            { code: "1211", nameAr: "الأراضي والعقارات التشغيلية", nameEn: "Freehold Lands", debit: 300000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-06" },
+            { code: "1212", nameAr: "المباني والإنشاءات والمرافق الخاضعة للاستهلاك", nameEn: "Buildings and Facilities", debit: 150000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-06" },
+            { code: "1213", nameAr: "الآلات والمعدات ووسائل الإنتاج والتركيبات", nameEn: "Machinery and Equipment", debit: 200000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-06" },
+            { code: "1214", nameAr: "مجمع استهلاك الأصول الثابتة المتراكم", nameEn: "Accumulated Depreciation", debit: 0, credit: 70000, category: "Assets", subCategory: "Non-Current Assets", period: "2026-06" },
+            { code: "1220", nameAr: "الأصول غير الملموسة والشهرة والبرمجيات", nameEn: "Intangible Assets & Goodwill", debit: 50000, credit: 0, category: "Assets", subCategory: "Non-Current Assets", period: "2026-06" },
+            { code: "2111", nameAr: "الموردون والذمم الدائنة التجارية", nameEn: "Trade Payables", debit: 0, credit: 102000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2112", nameAr: "الأرصدة الدائنة الأخرى والمصاريف المستحقة", nameEn: "Accrued Expenses & Other Credit Balances", debit: 0, credit: 28000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2113", nameAr: "دفعات مقبوضة مقدماً من العملاء", nameEn: "Contract Liabilities (Advances from Customers)", debit: 0, credit: 18000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2121", nameAr: "قروض وتسهيلات بنكية قصيرة الأجل", nameEn: "Short-term Loans and Facilities", debit: 0, credit: 50000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2130", nameAr: "مستحقات لأطراف ذات علاقة", nameEn: "Due to Related Parties", debit: 0, credit: 20000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2140", nameAr: "مخصص الزكاة الشرعية وضريبة الدخل المقدرة", nameEn: "Provision for Zakat & Income Tax", debit: 0, credit: 18000, category: "Liabilities", subCategory: "Current Liabilities", period: "2026-06" },
+            { code: "2211", nameAr: "التزامات تمويلية وقروض طويلة الأجل", nameEn: "Long-term Bank Loans", debit: 0, credit: 200000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-06" },
+            { code: "2220", nameAr: "مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)", nameEn: "Provision for Employee Terminal Benefits", debit: 0, credit: 42000, category: "Liabilities", subCategory: "Non-Current Liabilities", period: "2026-06" },
+            { code: "3100", nameAr: "رأس المال المصرح به والمدفوع بالكامل", nameEn: "Paid-up Share Capital", debit: 0, credit: 750000, category: "Equity", subCategory: "Equity", period: "2026-06" },
+            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 60000, category: "Equity", subCategory: "Equity", period: "2026-06" },
+            { code: "3200", nameAr: "الأرباح المبقاة المدورة من سنوات سابقة", nameEn: "Retained Earnings", debit: 0, credit: 202000, category: "Equity", subCategory: "Equity", period: "2026-06" },
+            { code: "4110", nameAr: "إيرادات بيع المنتجات والسلع", nameEn: "Revenues from Goods Sold", debit: 0, credit: 510000, category: "Revenues", subCategory: "Revenues", period: "2026-06" },
+            { code: "4120", nameAr: "إيرادات تقديم الخدمات الفنية والصيانة", nameEn: "Revenues from Services Rendered", debit: 0, credit: 110000, category: "Revenues", subCategory: "Revenues", period: "2026-06" },
+            { code: "4150", nameAr: "خصومات ومسموحات مبيعات ممنوحة للعملاء", nameEn: "Sales Discounts & Allowances", debit: 18000, credit: 0, category: "Revenues", subCategory: "Revenues", period: "2026-06" },
+            { code: "5110", nameAr: "تكلفة المواد الخام المباشرة المستخدمة", nameEn: "Direct Materials Consumed", debit: 205000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-06" },
+            { code: "5120", nameAr: "تكلفة الأجور المباشرة والعمالة الإنتاجية", nameEn: "Direct Labor Costs", debit: 65000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-06" },
+            { code: "5130", nameAr: "مصاريف صناعية غير مباشرة وإيجار المصنع والتشغيل", nameEn: "Indirect Manufacturing Overheads", debit: 45000, credit: 0, category: "Expenses", subCategory: "COGS", period: "2026-06" },
+            { code: "5211", nameAr: "رواتب ومنافع موظفي الإدارة العامة", nameEn: "Administrative Salaries & Employee Benefits", debit: 75000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-06" },
+            { code: "5212", nameAr: "إيجار المكاتب الإدارية والكهرباء والاتصالات", nameEn: "Office Rents, Utilities & Communications", debit: 25000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-06" },
+            { code: "5213", nameAr: "مصاريف التسويق والإعلانات والبيع والتوزيع", nameEn: "Marketing, Advertising & Distribution", debit: 22000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-06" },
+            { code: "5214", nameAr: "استهلاك الأصول الثابتة وإطفاء الفترة الحالي", nameEn: "Depreciation & Amortization Expense", debit: 20000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-06" },
+            { code: "5215", nameAr: "مصروف مخصص الديون والائتمان للفترة", nameEn: "ECL Provision Expense for the Period", debit: 6000, credit: 0, category: "Expenses", subCategory: "OPEX", period: "2026-06" },
+            { code: "5310", nameAr: "تكاليف تمويلية وفوائد بنكية مدفوعة", nameEn: "Finance Costs & Bank Interest Expense", debit: 15000, credit: 0, category: "Expenses", subCategory: "Finance", period: "2026-06" },
+            { code: "5410", nameAr: "مصروف الزكاة الشرعية وضريبة الدخل التقديرية", nameEn: "Zakat & Income Tax Expense for the Period", debit: 12000, credit: 0, category: "Expenses", subCategory: "Tax", period: "2026-06" }
         ];
 
         function App() {
@@ -148,14 +212,14 @@
             const [activeStatementTab, setActiveStatementTab] = useState('income'); // income, balance, cashflow
             // إدارة ميزان المراجعة النشط في النظام
             const [trialBalance, setTrialBalance] = useState(defaultTrialBalance);
-            // الفترة المالية المختارة
+            // الفترة المالية المختارة (تلقائياً مايو 2026 كفترة متوسطة حية)
             const [selectedPeriod, setSelectedPeriod] = useState('2026-05');
             // متغيرات لوحة محاكاة السيناريوهات المالية (ماذا لو؟)
             const [simSalesGrowth, setSimSalesGrowth] = useState(0); // نسبة التغيير المتوقعة في المبيعات %
             const [simCogsRatio, setSimCogsRatio] = useState(44); // نسبة تكلفة البضاعة المباعة إلى المبيعات %
             const [simOpexRatio, setSimOpexRatio] = useState(22); // نسبة المصاريف الإدارية إلى المبيعات %
 
-            // دالة لحساب المؤشرات المالية والقوائم بشكل فوري ومترابط من ميزان المراجعة الفعلي
+            // دالة لحساب المؤشرات المالية والقوائم بشكل فوري ومترابط من ميزان المراجعة المفلتر حسب الشهر
             const calculateFinancials = () => {
                 let cash = 0;
                 let bank = 0;
@@ -203,7 +267,10 @@
                 let financeCosts = 0;
                 let zakatTaxExpense = 0;
 
-                trialBalance.forEach(item => {
+                // تصفية السجلات ديناميكياً لتشمل فقط الحسابات التابعة للفترة المحددة
+                const filteredData = trialBalance.filter(item => !item.period || item.period === selectedPeriod);
+
+                filteredData.forEach(item => {
                     const code = parseInt(item.code);
                     const debitAmt = parseFloat(item.debit) || 0;
                     const creditAmt = parseFloat(item.credit) || 0;
@@ -214,7 +281,7 @@
                         case 1112: bank += netAmt; break;
                         case 1113: stInvestments += netAmt; break;
                         case 1120: receivables += netAmt; break;
-                        case 1125: eclAllowance += creditAmt; break; // رصيد دائن بطبيعته
+                        case 1125: eclAllowance += creditAmt; break; 
                         case 1131: rawMaterials += netAmt; break;
                         case 1132: wip += netAmt; break;
                         case 1133: finishedGoods += netAmt; break;
@@ -223,7 +290,7 @@
                         case 1211: lands += netAmt; break;
                         case 1212: buildings += netAmt; break;
                         case 1213: machinery += netAmt; break;
-                        case 1214: accumDepr += creditAmt; break; // رصيد دائن بطبيعته
+                        case 1214: accumDepr += creditAmt; break; 
                         case 1220: intangibleAssets += netAmt; break;
 
                         case 2111: payables += creditAmt; break;
@@ -242,7 +309,7 @@
 
                         case 4110: revenueGoods += creditAmt; break;
                         case 4120: revenueServices += creditAmt; break;
-                        case 4150: salesDiscounts += debitAmt; break; // رصيد مدين بطبيعته كخصم
+                        case 4150: salesDiscounts += debitAmt; break; 
 
                         case 5110: cogsMaterials += debitAmt; break;
                         case 5120: cogsLabor += debitAmt; break;
@@ -283,9 +350,9 @@
                 const totalCogs = cogsMaterials + cogsLabor + cogsOverhead;
                 const grossProfit = netSales - totalCogs;
                 const totalOpex = opexSalaries + opexRent + opexMarketing + opexDepreciation + opexEcl;
-                const operatingProfit = grossProfit - totalOpex; // الربح التشغيلي قبل الفوائد والزكاة (EBIT)
+                const operatingProfit = grossProfit - totalOpex; 
                 const netIncomeBeforeZakat = operatingProfit - financeCosts;
-                const netIncome = netIncomeBeforeZakat - zakatTaxExpense; // صافي الربح النهائي للفترة
+                const netIncome = netIncomeBeforeZakat - zakatTaxExpense; 
 
                 // إجمالي حقوق الملكية النهائي
                 const totalEquity = baseEquity + netIncome;
@@ -300,10 +367,10 @@
                 const workingCapital = totalCurrentAssets - totalCurrentLiabilities;
 
                 // دراسة كفاءة رأس المال العامل وأعمار الذمم
-                const dso = netSales > 0 ? Math.round((netReceivables / netSales) * 365) : 0; // فترة تحصيل العملاء
-                const dio = totalCogs > 0 ? Math.round((totalInventory / totalCogs) * 365) : 0; // فترة بقاء المخزون
-                const dpo = totalCogs > 0 ? Math.round((payables / totalCogs) * 365) : 0; // فترة سداد الموردين
-                const ccc = (dso + dio) - dpo; // دورة التحويل النقدي المجمعة
+                const dso = netSales > 0 ? Math.round((netReceivables / netSales) * 365) : 0; 
+                const dio = totalCogs > 0 ? Math.round((totalInventory / totalCogs) * 365) : 0; 
+                const dpo = totalCogs > 0 ? Math.round((payables / totalCogs) * 365) : 0; 
+                const ccc = (dso + dio) - dpo; 
 
                 return {
                     totalCashAndEquivalents, netReceivables, totalInventory, totalCurrentAssets,
@@ -313,12 +380,12 @@
                     netSales, totalCogs, grossProfit, totalOpex, operatingProfit, netIncomeBeforeZakat, netIncome,
                     currentRatio, quickRatio, debtToEquity, returnOnEquity, returnOnAssets, workingCapital,
                     dso, dio, dpo, ccc,
-                    // تفاصيل الأرصدة لعرض القوائم
                     cash, bank, stInvestments, receivables, eclAllowance, rawMaterials, wip, finishedGoods, prepaids, dueFromRelated,
                     lands, buildings, machinery, accumDepr, intangibleAssets, payables, accruedExp, customerAdvances,
                     shortTermLoans, dueToRelated, zakatProvision, longTermLoans, endOfServiceProvision, capital, statutoryReserve, retainedEarnings,
                     revenueGoods, revenueServices, salesDiscounts, cogsMaterials, cogsLabor, cogsOverhead,
-                    opexSalaries, opexRent, opexMarketing, opexDepreciation, opexEcl, financeCosts, zakatTaxExpense
+                    opexSalaries, opexRent, opexMarketing, opexDepreciation, opexEcl, financeCosts, zakatTaxExpense,
+                    filteredCount: filteredData.length
                 };
             };
 
@@ -329,13 +396,67 @@
                 return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val);
             };
 
-            // حسابات المحاكاة اللحظية لسيناريوهات "ماذا لو؟"
+            // حسابات المحاكاة اللحظية لسيناريوهات "ماذا لو؟" (تتحدث فوراً بناءً على الشهر المختار)
             const simulatedSales = fin.netSales * (1 + simSalesGrowth / 100);
             const simulatedCogs = simulatedSales * (simCogsRatio / 100);
             const simulatedGrossProfit = simulatedSales - simulatedCogs;
             const simulatedOpex = simulatedSales * (simOpexRatio / 100);
             const simulatedEbit = simulatedGrossProfit - simulatedOpex;
             const simulatedNetIncome = simulatedEbit - fin.financeCosts - fin.zakatTaxExpense;
+
+            // توليد التوصيات الذكية والديناميكية للمستثمر بناءً على أرقام الشهر المختار
+            const generateInvestorRecommendations = () => {
+                const recs = [];
+                const currentRatioNum = parseFloat(fin.currentRatio);
+                const debtToEquityNum = parseFloat(fin.debtToEquity);
+
+                if (currentRatioNum < 1.5) {
+                    recs.push({
+                        title: "دعم سيولة رأس المال العامل",
+                        desc: `نسبة التداول الحالية للفترة تبلغ ${fin.currentRatio} وهي أقل من المستهدف الآمن (1.5). نوصي بضخ جزء من الاستثمارات أو تسييل الاستثمارات قصيرة الأجل البالغة ${formatCurrency(fin.stInvestments)} لتأمين التدفقات النقدية التشغيلية.`
+                    });
+                } else {
+                    recs.push({
+                        title: "فرص استغلال السيولة الفائضة",
+                        desc: `تمتلك الشركة نسبة تداول ممتازة بمقدار ${fin.currentRatio}. نقترح توجيه النقد الفائض البالغ ${formatCurrency(fin.totalCashAndEquivalents)} نحو توسيع شبكة المبيعات وتحديث خطوط الإنتاج والآلات التشغيلية.`
+                    });
+                }
+
+                if (fin.dso > 50) {
+                    recs.push({
+                        title: "إعادة النظر في سياسات الائتمان ومنح التسهيلات للعملاء",
+                        desc: `متوسط فترة التحصيل DSO وصلت إلى ${fin.dso} يوماً. من الضروري جداً تطبيق آلية متابعة صارمة لعملاء الآجل وتفعيل خصم تعجيل الدفع للمحافظة على دورة نقدية سريعة.`
+                    });
+                } else {
+                    recs.push({
+                        title: "إشادة بكفاءة التحصيل والائتمان",
+                        desc: `فترة تحصيل ديون العملاء جيدة ومثالية جداً حيث تبلغ ${fin.dso} يوماً فقط. هذه الميزة تدعم سرعة دوران رأس المال العامل وتدفق السيولة.`
+                    });
+                }
+
+                if (debtToEquityNum > 50) {
+                    recs.push({
+                        title: "إعادة هيكلة الديون الطويلة والقصيرة",
+                        desc: `نسبة الالتزامات إلى حقوق الشركاء تبلغ ${fin.debtToEquity}%. نوصي بالتوجه لتسوية جزء من القروض البنكية قصيرة الأجل البالغة ${formatCurrency(fin.shortTermLoans)} لتخفيف تكاليف الفوائد البنكية وتحسين التصنيف الائتماني.`
+                    });
+                } else {
+                    recs.push({
+                        title: "سلامة الرافعة المالية والملاءة",
+                        desc: `تتمتع الشركة بهيكل تمويلي سليم برافعة مالية آمنة ${fin.debtToEquity}%. هذا يمنح المستثمرين ثقة تامة وقدرة على الاقتراض المستقبلي لتمويل مشروعات النمو الكبرى.`
+                    });
+                }
+
+                return recs;
+            };
+
+            const investorRecommendations = generateInvestorRecommendations();
+
+            // تفعيل أيقونات الملاحة وواجهات الاستخدام
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [currentView, selectedPeriod, activeStatementTab]);
 
             // دالة لتنزيل قالب إكسل فارغ تماماً يحتوي فقط على الهيدر بناءً على التوجيهات الفنية
             const downloadExcelTemplate = () => {
@@ -379,8 +500,10 @@
                     }
 
                     if (parsedBalance.length > 0) {
-                        setTrialBalance(parsedBalance);
-                        alert("تم استيراد ميزان المراجعة بنجاح! تم ربط الحسابات وتحديث لوحات العرض والتقارير المالية فوراً وبدقة تامة.");
+                        // دمج الميزان الجديد مع الحسابات الحالية أو استبدالها بشكل كامل للفترة المختارة
+                        const otherPeriods = trialBalance.filter(item => item.period !== selectedPeriod);
+                        setTrialBalance([...otherPeriods, ...parsedBalance]);
+                        alert(`تم استيراد ميزان المراجعة بنجاح لشهر ${selectedPeriod}! تم ربط وتحديث القوائم والتحليلات فورياً.`);
                         setCurrentView('dashboard');
                     } else {
                         alert("تنبيه: لم نتمكن من العثور على سجلات صالحة في الملف المرفوع. يرجى التأكد من مطابقة الملف لقالب الإدخال الخاص بالمنصة.");
@@ -478,7 +601,7 @@
                     {/* 2. منطقة العمل الرئيسية (Main Area) */}
                     <main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
                         
-                        {/* شريط الأدوات العلوي المبسط */}
+                        {/* شريط الأدوات العلوي مع تصفية ديناميكية تفاعلية مذهلة */}
                         <header class="bg-white border-b border-slate-200 h-20 px-8 flex items-center justify-between sticky top-0 z-10 shadow-sm">
                             <div class="flex items-center space-x-6 space-x-reverse">
                                 <h2 class="text-xl font-extrabold text-slate-900">
@@ -491,16 +614,21 @@
                                 </h2>
                             </div>
 
-                            {/* تحديد الفترة وتنزيل القالب المحاسبي المعتمد */}
+                            {/* تصفية تفاعلية حية لأشهر الربع الثاني 2026 */}
                             <div class="flex items-center space-x-4 space-x-reverse">
                                 <div class="flex items-center space-x-2 space-x-reverse">
-                                    <span class="text-xs text-slate-500 font-bold">الفترة المالية:</span>
-                                    <input 
-                                        type="month" 
+                                    <span class="text-xs text-slate-500 font-bold">الفترة المالية المحددة للتحليل الحركي:</span>
+                                    <select 
                                         value={selectedPeriod}
-                                        onChange={(e) => setSelectedPeriod(e.target.value)}
-                                        class="border border-slate-200 px-3 py-1.5 rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-slate-50"
-                                    />
+                                        onChange={(e) => {
+                                            setSelectedPeriod(e.target.value);
+                                        }}
+                                        class="border border-slate-200 px-4 py-2 rounded-lg text-sm font-extrabold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-slate-50 text-slate-900 cursor-pointer"
+                                    >
+                                        <option value="2026-04">أبريل 2026 (ميزان تجريبي متزن)</option>
+                                        <option value="2026-05">مايو 2026 (ميزان تجريبي متزن)</option>
+                                        <option value="2026-06">يونيو 2026 (ميزان تجريبي متزن)</option>
+                                    </select>
                                 </div>
 
                                 <button 
@@ -508,7 +636,7 @@
                                     class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 space-x-reverse transition-all"
                                 >
                                     <i data-lucide="download" class="w-4 h-4"></i>
-                                    <span>تحميل نموذج ميزان المراجعة الفارغ (Excel)</span>
+                                    <span>نموذج Excel فارغ</span>
                                 </button>
                             </div>
                         </header>
@@ -517,14 +645,14 @@
                         <div class="p-8 flex-1 max-w-7xl w-full mx-auto space-y-8 fade-in">
                             
                             {/* إرشادات تشغيل احترافية ومبسطة ترشد المستخدم بخطوات الخبير البشري */}
-                            <div class="bg-emerald-50/50 border border-emerald-200/60 rounded-2xl p-4 flex items-start space-x-3 space-x-reverse">
-                                <div class="bg-emerald-500 text-white p-2 rounded-xl mt-0.5">
+                            <div class="bg-emerald-50/50 border border-emerald-200/60 rounded-2xl p-4 flex items-start space-x-3 space-x-reverse shadow-sm">
+                                <div class="bg-emerald-500 text-white p-2 rounded-xl mt-0.5 animate-pulse">
                                     <i data-lucide="info" class="w-5 h-5"></i>
                                 </div>
                                 <div class="space-y-1">
-                                    <h4 class="font-bold text-emerald-950 text-xs">دليل تشغيل المنصة والخطوات المهنية:</h4>
+                                    <h4 class="font-bold text-emerald-950 text-xs">تحليل ديناميكي حركي نشط للفترة ({selectedPeriod}):</h4>
                                     <p class="text-xs text-emerald-800 leading-relaxed">
-                                        مرحباً بك في بوابتك المهنية المخصصة لمطابقة وتدقيق موازين المراجعة الدورية وتوليد التقارير القياسية وفقاً لمعايير التقارير المالية الدولية (IFRS). يرجى الضغط على زر تحميل القالب الفارغ لتنزيل ملف الإدخال والبدء بتسجيل أرصدة الحسابات الخاصة بالفترة وتثبيت أكوادها، ثم إسقاط الملف في بوابة رفع البيانات لتحديث جميع لوحات العرض والتقديرات التشغيلية فوراً وبدقة تامة.
+                                        تتفاعل جميع القوائم والنسب المالية المدرجة في المنصة ديناميكياً عند اختيارك أي فترة زمنية مختلفة من القائمة المنسدلة في الأعلى. يرجى تجربة التبديل لمعاينة التغير التلقائي في المبيعات، ومجمل الأرباح وتوزيع السيولة وهيكل التدفق النقدي.
                                     </p>
                                 </div>
                             </div>
@@ -532,13 +660,13 @@
                             {/* ==================== الواجهة 1: لوحة الأداء العام والملخص التنفيذي (Dashboard) ==================== */}
                             {currentView === 'dashboard' && (
                                 <div class="space-y-8">
-                                    {/* بطاقات المؤشرات المالية الرئيسية المحسوبة */}
+                                    {/* بطاقات المؤشرات المالية الرئيسية المحسوبة ديناميكياً */}
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                         
                                         {/* مبيعات الفترة */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                                             <div class="space-y-2">
-                                                <span class="text-xs font-semibold text-slate-500">صافي مبيعات وإيرادات الفترة</span>
+                                                <span class="text-xs font-semibold text-slate-500">صافي المبيعات والإيرادات</span>
                                                 <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.netSales)}</h3>
                                                 <div class="flex items-center space-x-1 space-x-reverse text-xs text-emerald-600 font-bold">
                                                     <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
@@ -607,7 +735,7 @@
                                                     <i data-lucide="gauge" class="text-emerald-500"></i>
                                                     <span>تحليل ملاءة السيولة وتغطية الالتزامات القصيرة</span>
                                                 </h3>
-                                                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold">مستخلص ومطابق محاسبياً</span>
+                                                <span class="text-xs bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-bold">مستخلص ومطابق محاسبياً لـ {selectedPeriod}</span>
                                             </div>
 
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -638,7 +766,7 @@
                                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
                                                 <h4 class="text-xs font-bold text-slate-600">رأي المحلل المالي الخبير:</h4>
                                                 <p class="text-xs text-slate-500 leading-relaxed">
-                                                    تشير البيانات المحاسبية المحللة إلى ملاءة مالية مطمئنة جداً. مع ذمم مدينة نشطة بقيمة <strong class="text-slate-800">{formatCurrency(fin.netReceivables)}</strong>، وإجمالي مخزون تشغيلي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.totalInventory)}</strong>. يتضح توازن توزيع الموارد والأصول غير المتداولة ومنها الآلات والمباني بالصافي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.netFixedAssets)}</strong> مما يدعم ثبات الكفاءة الإنتاجية للمنشأة.
+                                                    تشير البيانات المحاسبية لشهر <strong class="text-slate-900">{selectedPeriod}</strong> إلى ملاءة مالية مطمئنة جداً. مع ذمم مدينة نشطة بقيمة <strong class="text-slate-800">{formatCurrency(fin.netReceivables)}</strong>، وإجمالي مخزون تشغيلي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.totalInventory)}</strong>. يتضح توازن توزيع الموارد والأصول غير المتداولة ومنها الآلات والمباني بالصافي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.netFixedAssets)}</strong> مما يدعم ثبات الكفاءة الإنتاجية للمنشأة.
                                                 </p>
                                             </div>
                                         </div>
@@ -678,16 +806,38 @@
                                         </div>
 
                                     </div>
+                                    
+                                    {/* قسم جديد بالكامل: التوصيات الاستراتيجية المخصصة للمستثمر */}
+                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                                        <div class="flex justify-between items-center border-b border-slate-100 pb-4">
+                                            <h3 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="trending-up" class="text-emerald-500"></i>
+                                                <span>توصيات المستثمر الاستراتيجية بناءً على أرقام ({selectedPeriod})</span>
+                                            </h3>
+                                            <span class="text-xs bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full font-bold">توصيات حية تتغير بتغير الشهر</span>
+                                        </div>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                            {investorRecommendations.map((rec, index) => (
+                                                <div key={index} class="bg-slate-50 hover:bg-slate-100/50 p-5 rounded-xl border border-slate-200 space-y-3 transition-all">
+                                                    <div class="flex items-center space-x-2 space-x-reverse text-emerald-600">
+                                                        <i data-lucide="check-circle" class="w-5 h-5"></i>
+                                                        <h4 class="font-bold text-sm text-slate-900">{rec.title}</h4>
+                                                    </div>
+                                                    <p class="text-xs text-slate-600 leading-relaxed">{rec.desc}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة الجديدة: القوائم المالية الكاملة (Statements) ==================== */}
+                            {/* ==================== الواجهة 2: القوائم المالية الكاملة (Statements) ==================== */}
                             {currentView === 'statements' && (
                                 <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
                                     <div class="border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                                         <div>
                                             <h3 class="text-lg font-bold text-slate-900">التقارير والقوائم المالية المعتمدة وفقاً لمعايير IFRS</h3>
-                                            <p class="text-sm text-slate-500 mt-1">قوائم مالية تلقائية تم تبويبها وتجميعها من أرصدة ميزان المراجعة لتمثيل حقيقة الوضع المالي للشركة.</p>
+                                            <p class="text-sm text-slate-500 mt-1">قوائم مالية تلقائية تم تبويبها وتجميعها من أرصدة ميزان المراجعة لتمثيل حقيقة الوضع المالي للشركة لشهر {selectedPeriod}.</p>
                                         </div>
                                         
                                         {/* أزرار التنقل الداخلي بين القوائم الثلاثة */}
@@ -823,7 +973,6 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody class="text-sm divide-y divide-slate-100">
-                                                        {/* الأصول المتداولة */}
                                                         <tr class="bg-slate-100 font-extrabold text-slate-800">
                                                             <td class="p-4" colspan="2">الأصول المتداولة (Current Assets)</td>
                                                         </tr>
@@ -852,7 +1001,6 @@
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalCurrentAssets)}</td>
                                                         </tr>
 
-                                                        {/* الأصول غير المتداولة */}
                                                         <tr class="bg-slate-100 font-extrabold text-slate-800">
                                                             <td class="p-4" colspan="2">الأصول غير المتداولة (Non-Current Assets)</td>
                                                         </tr>
@@ -869,13 +1017,11 @@
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalNonCurrentAssets)}</td>
                                                         </tr>
 
-                                                        {/* إجمالي الأصول */}
                                                         <tr class="bg-emerald-600 text-white font-black border-y-4 border-emerald-700 text-base">
                                                             <td class="p-4">إجمالي الأصول (Total Assets)</td>
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalAssets)}</td>
                                                         </tr>
 
-                                                        {/* الالتزامات المتداولة */}
                                                         <tr class="bg-slate-100 font-extrabold text-slate-800">
                                                             <td class="p-4" colspan="2">الالتزامات المتداولة (Current Liabilities)</td>
                                                         </tr>
@@ -900,7 +1046,6 @@
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalCurrentLiabilities)}</td>
                                                         </tr>
 
-                                                        {/* الالتزامات غير المتداولة */}
                                                         <tr class="bg-slate-100 font-extrabold text-slate-800">
                                                             <td class="p-4" colspan="2">الالتزامات غير المتداولة (Non-Current Liabilities)</td>
                                                         </tr>
@@ -917,13 +1062,11 @@
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalNonCurrentLiabilities)}</td>
                                                         </tr>
 
-                                                        {/* إجمالي الالتزامات */}
                                                         <tr class="bg-slate-200 font-extrabold text-slate-900">
                                                             <td class="p-4">إجمالي الالتزامات (Total Liabilities)</td>
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalLiabilities)}</td>
                                                         </tr>
 
-                                                        {/* حقوق الملكية */}
                                                         <tr class="bg-slate-100 font-extrabold text-slate-800">
                                                             <td class="p-4" colspan="2">حقوق الملكية (Equity)</td>
                                                         </tr>
@@ -948,7 +1091,6 @@
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalEquity)}</td>
                                                         </tr>
 
-                                                        {/* توازن المركز المالي */}
                                                         <tr class="bg-blue-600 text-white font-black border-t-4 border-blue-700 text-base">
                                                             <td class="p-4">إجمالي الالتزامات وحقوق الملكية (Liabilities & Equity)</td>
                                                             <td class="p-4 text-left">{formatCurrency(fin.totalLiabilities + fin.totalEquity)}</td>
@@ -1040,11 +1182,11 @@
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة 2: بوابة رفع البيانات والمدقق (Ingestion) ==================== */}
+                            {/* ==================== الواجهة 3: بوابة رفع البيانات والمدقق (Ingestion) ==================== */}
                             {currentView === 'ingestion' && (
                                 <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
                                     <div class="border-b border-slate-200 pb-6">
-                                        <h3 class="text-lg font-bold text-slate-900">استيراد وقراءة ميزان المراجعة</h3>
+                                        <h3 class="text-lg font-bold text-slate-900">استيراد وقراءة ميزان المراجعة لشهر {selectedPeriod}</h3>
                                         <p class="text-sm text-slate-500 mt-1">يرجى تحميل النموذج الفارغ لتعبئة بيانات حساباتك وتفاصيل الأرصدة ومن ثم سحب وإسقاط الملف هنا لربط وقراءة البيانات وتوليد التقارير تلقائياً.</p>
                                     </div>
 
@@ -1062,7 +1204,7 @@
                                             </div>
                                             <div>
                                                 <p class="font-bold text-slate-800 text-base">اضغط هنا لاستعراض أو سحب ملف ميزان المراجعة (Excel)</p>
-                                                <p class="text-xs text-slate-400 mt-1">الملفات المدعومة بصيغ الامتداد .xlsx, .xls فقط</p>
+                                                <p class="text-xs text-slate-400 mt-1">سيتم تعبئة وقراءة الأرصدة وربطها تلقائياً بشهر {selectedPeriod}</p>
                                             </div>
                                             <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-sm shadow-md transition-all">تصفح ملفات جهازك</button>
                                         </div>
@@ -1073,7 +1215,7 @@
                                         <div class="flex justify-between items-center">
                                             <h4 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
                                                 <i data-lucide="check-square" class="text-emerald-500"></i>
-                                                <span>الأرصدة المحسوبة في ميزان المراجعة الحالي ({trialBalance.length} حساب مالي)</span>
+                                                <span>الأرصدة المحسوبة في ميزان المراجعة الحالي للفترة {selectedPeriod} ({fin.filteredCount} حساب مالي)</span>
                                             </h4>
                                             <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-bold">متزن ومتوافق مع معايير التقارير الدولية (IFRS)</span>
                                         </div>
@@ -1090,7 +1232,7 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody class="text-sm divide-y divide-slate-200">
-                                                    {trialBalance.map((item, index) => (
+                                                    {trialBalance.filter(item => !item.period || item.period === selectedPeriod).map((item, index) => (
                                                         <tr key={index} class="hover:bg-slate-50/50">
                                                             <td class="p-4 font-mono font-bold text-slate-600">{item.code}</td>
                                                             <td class="p-4 font-semibold text-slate-800">{item.nameAr}</td>
@@ -1106,11 +1248,11 @@
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة 3: مركز النسب المالية والتحليل (Ratios) ==================== */}
+                            {/* ==================== الواجهة 4: مركز النسب المالية والتحليل (Ratios) ==================== */}
                             {currentView === 'ratios' && (
                                 <div class="space-y-8">
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">تحليل النسب والمؤشرات التفصيلية</h3>
+                                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">تحليل النسب والمؤشرات التفصيلية لشهر {selectedPeriod}</h3>
                                         
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
                                             {/* نسب الربحية والأداء الفني */}
@@ -1189,13 +1331,13 @@
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة 4: رادار المخاطر والتنبيهات (Risk Radar) ==================== */}
+                            {/* ==================== الواجهة 5: رادار المخاطر والتنبيهات (Risk Radar) ==================== */}
                             {currentView === 'risk' && (
                                 <div class="space-y-8">
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                                         <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 flex items-center space-x-2 space-x-reverse">
                                             <i data-lucide="shield-alert" class="text-rose-500"></i>
-                                            <span>رادار تقييم المخاطر وتنبيهات الأداء التشغيلي والسيولة</span>
+                                            <span>رادار تقييم المخاطر وتنبيهات الأداء التشغيلي والسيولة لشهر {selectedPeriod}</span>
                                         </h3>
 
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1251,14 +1393,14 @@
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة 5: التنبؤ والتخطيط والسيناريوهات (Forecasting) ==================== */}
+                            {/* ==================== الواجهة 6: التنبؤ والتخطيط والسيناريوهات (Forecasting) ==================== */}
                             {currentView === 'forecasting' && (
                                 <div class="space-y-8">
                                     {/* لوحة السيناريوهات التفاعلية (ماذا لو؟) */}
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                                         <div class="border-b border-slate-100 pb-4">
                                             <h3 class="text-lg font-bold text-slate-900">محاكي السيناريوهات المالية التفاعلي (What-If Analysis)</h3>
-                                            <p class="text-xs text-slate-500 mt-1">قم بتعديل مؤشرات المبيعات ونسب التكلفة والمصاريف لملاحظة النتيجة التقديرية التلقائية لصافي الربح المتوقع فوراً.</p>
+                                            <p class="text-xs text-slate-500 mt-1">قم بتعديل مؤشرات المبيعات ونسب التكلفة والمصاريف لملاحظة النتيجة التقديرية التلقائية لصافي الربح المتوقع فوراً لشهر {selectedPeriod}.</p>
                                         </div>
 
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -1344,9 +1486,9 @@
                                         <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
                                             <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
                                                 <i data-lucide="calendar" class="text-emerald-500"></i>
-                                                <span>تقديرات أداء الفترات التشغيلية المقبلة</span>
+                                                <span>تقديرات أداء الفترات التشغيلية المقبلة بناءً على مستويات شهر {selectedPeriod}</span>
                                             </h4>
-                                            <p class="text-xs text-slate-500 leading-relaxed">استناداً إلى الاتجاه التاريخي للأرباح والمبيعات ومستويات التكلفة الثابتة والمصروفات المستخلصة من ميزان المراجعة، يوضح الجدول التالي المبيعات والسيولة النقدية المتوقعة للثلاثة أشهر المقبلة:</p>
+                                            <p class="text-xs text-slate-500 leading-relaxed">استناداً إلى الاتجاه التاريخي للأرباح والمبيعات ومستويات التكلفة الثابتة والمصروفات المستخلصة من ميزان المراجعة لشهر {selectedPeriod}، يوضح الجدول التالي المبيعات والسيولة النقدية المتوقعة للثلاثة أشهر المقبلة:</p>
 
                                             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                                                 {/* الشهر 1 */}
