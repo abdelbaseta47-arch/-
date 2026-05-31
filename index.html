@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>منصة التحليل المالي الذكية - FinTech Dashboard</title>
+    <title>المنصة المهنية للتحليل المالي وإعداد التقارير</title>
     <!-- خط Cairo المتميز للتصاميم العربية الاحترافية -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,8 +14,6 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- مكتبة الرسوم البيانية الشهيرة Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- مكتبة قراءة ملفات الإكسل XLSX -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <!-- أيقونات Lucide الرائعة -->
@@ -51,156 +49,307 @@
         }
         /* تأثيرات الانتقال والتمرير السلس */
         .fade-in {
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.35s ease-out;
         }
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
+            from { opacity: 0; transform: translateY(12px); }
             to { opacity: 1; transform: translateY(0); }
+        }
+        /* تصميم مخصص لشريط التمرير */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
     </style>
 </head>
-<body class="text-slate-800">
+<body class="text-slate-800 bg-slate-50/50">
 
     <div id="root"></div>
 
     <!-- كود تطبيق الـ React والتحليلات المالية المدمجة -->
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect } = React;
 
-        // ميزان مراجعة نموذجي IFRS (عربي/إنجليزي) لتشغيل المنصة مباشرة وتسهيل المعاينة
+        // ميزان مراجعة موسع وشامل نموذجياً ومتزن 100% وفقاً لمعايير IFRS الدولية
+        // إجمالي المدين = 1,580,000 ريال | إجمالي الدائن = 1,580,000 ريال
         const defaultTrialBalance = [
             // الأصول المتداولة
-            { code: "1110", nameAr: "النقد وما في حكمه", nameEn: "Cash & Cash Equivalents", debit: 185000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1120", nameAr: "العملاء (الذمم المدينة)", nameEn: "Trade Receivables", debit: 120000, credit: 0, category: "Assets", subCategory: "Current Assets" },
-            { code: "1130", nameAr: "المخزون السلعي", nameEn: "Inventory", debit: 210000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1111", nameAr: "النقدية في الخزينة الصندوق", nameEn: "Cash on Hand", debit: 45000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1112", nameAr: "البنوك - الحسابات الجارية بالريال", nameEn: "Cash at Banks - Current Accounts", debit: 140000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1113", nameAr: "استثمارات مالية قصيرة الأجل بقيمتها العادلة", nameEn: "Short-term Financial Investments", debit: 50000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1120", nameAr: "العملاء والذمم المدينة التجارية", nameEn: "Trade Receivables", debit: 135000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1125", nameAr: "مخصص خسائر ائتمانية متوقعة للعملاء (ECL)", nameEn: "Allowance for Expected Credit Losses", debit: 0, credit: 5000, category: "Assets", subCategory: "Current Assets" }, // حساب مقابل للأصول
+            { code: "1131", nameAr: "مخزون المواد الخام الأولية", nameEn: "Raw Materials Inventory", debit: 70000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1132", nameAr: "مخزون إنتاج تحت التشغيل", nameEn: "Work-in-Progress Inventory", debit: 40000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1133", nameAr: "مخزون السلع تامة الصنع الجاهزة للبيع", nameEn: "Finished Goods Inventory", debit: 110000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1140", nameAr: "أرصدة مدينة أخرى ومصاريف مدفوعة مقدماً", nameEn: "Prepaid Expenses & Other Debit Balances", debit: 15000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+            { code: "1150", nameAr: "حسابات مستحقة من أطراف ذات علاقة", nameEn: "Due from Related Parties", debit: 25000, credit: 0, category: "Assets", subCategory: "Current Assets" },
+
             // الأصول غير المتداولة
-            { code: "1210", nameAr: "الأصول الثابتة (بالصافي)", nameEn: "Property, Plant & Equipment", debit: 450000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+            { code: "1211", nameAr: "الأراضي والعقارات التشغيلية", nameEn: "Freehold Lands", debit: 150000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+            { code: "1212", nameAr: "المباني والإنشاءات والمرافق الخاضعة للاستهلاك", nameEn: "Buildings and Facilities", debit: 30000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+            { code: "1213", nameAr: "الآلات والمعدات ووسائل الإنتاج والتركيبات", nameEn: "Machinery and Equipment", debit: 120000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+            { code: "1214", nameAr: "مجمع استهلاك الأصول الثابتة المتراكم", nameEn: "Accumulated Depreciation", debit: 0, credit: 40000, category: "Assets", subCategory: "Non-Current Assets" }, // حساب مقابل للأصول غير المتداولة
+            { code: "1220", nameAr: "الأصول غير الملموسة والشهرة والبرمجيات", nameEn: "Intangible Assets & Goodwill", debit: 35000, credit: 0, category: "Assets", subCategory: "Non-Current Assets" },
+
             // الالتزامات المتداولة
-            { code: "2110", nameAr: "الموردون (الذمم الدائنة)", nameEn: "Trade Payables", debit: 0, credit: 95000, category: "Liabilities", subCategory: "Current Liabilities" },
-            { code: "2120", nameAr: "قروض قصيرة الأجل", nameEn: "Short-term Loans", debit: 0, credit: 50000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2111", nameAr: "الموردون والذمم الدائنة التجارية", nameEn: "Trade Payables", debit: 0, credit: 85000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2112", nameAr: "الأرصدة الدائنة الأخرى والمصاريف المستحقة", nameEn: "Accrued Expenses & Other Credit Balances", debit: 0, credit: 15000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2113", nameAr: "دفعات مقبوضة مقدماً من العملاء", nameEn: "Contract Liabilities (Advances from Customers)", debit: 0, credit: 10000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2121", nameAr: "قروض وتسهيلات بنكية قصيرة الأجل", nameEn: "Short-term Loans and Facilities", debit: 0, credit: 40000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2130", nameAr: "مستحقات لأطراف ذات علاقة", nameEn: "Due to Related Parties", debit: 0, credit: 20000, category: "Liabilities", subCategory: "Current Liabilities" },
+            { code: "2140", nameAr: "مخصص الزكاة الشرعية وضريبة الدخل المقدرة", nameEn: "Provision for Zakat & Income Tax", debit: 0, credit: 12000, category: "Liabilities", subCategory: "Current Liabilities" },
+
+            // الالتزامات غير المتداولة
+            { code: "2211", nameAr: "التزامات تمويلية وقروض طويلة الأجل", nameEn: "Long-term Bank Loans", debit: 0, credit: 180000, category: "Liabilities", subCategory: "Non-Current Liabilities" },
+            { code: "2220", nameAr: "مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)", nameEn: "Provision for Employee Terminal Benefits", debit: 0, credit: 35000, category: "Liabilities", subCategory: "Non-Current Liabilities" },
+
             // حقوق الملكية
-            { code: "3100", nameAr: "رأس المال المدفوع", nameEn: "Share Capital", debit: 0, credit: 500000, category: "Equity", subCategory: "Equity" },
-            { code: "3200", nameAr: "الأرباح المبقاة (المدورة)", nameEn: "Retained Earnings", debit: 0, credit: 110000, category: "Equity", subCategory: "Equity" },
-            // الإيرادات
-            { code: "4100", nameAr: "إيرادات المبيعات والخدمات", nameEn: "Sales Revenues", debit: 0, credit: 420000, category: "Revenues", subCategory: "Revenues" },
-            // المصروفات
-            { code: "5100", nameAr: "تكلفة البضاعة المباعة (COGS)", nameEn: "Cost of Goods Sold", debit: 210000, credit: 0, category: "Expenses", subCategory: "Direct Expenses" },
-            { code: "5200", nameAr: "المصروفات الإدارية والعمومية", nameEn: "General & Administrative Expenses", debit: 75000, credit: 0, category: "Expenses", subCategory: "Operating Expenses" },
-            { code: "5300", nameAr: "تكاليف التمويل والفوائد", nameEn: "Finance Costs", debit: 15000, credit: 0, category: "Expenses", subCategory: "Finance Expenses" }
+            { code: "3100", nameAr: "رأس المال المصرح به والمدفوع بالكامل", nameEn: "Paid-up Share Capital", debit: 0, credit: 500000, category: "Equity", subCategory: "Equity" },
+            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 50, category: "Equity", subCategory: "Equity" }, // 50,000
+            { code: "3150", nameAr: "الاحتياطي النظامي الإلزامي", nameEn: "Statutory Reserve", debit: 0, credit: 50000, category: "Equity", subCategory: "Equity" },
+            { code: "3200", nameAr: "الأرباح المبقاة المدورة من سنوات سابقة", nameEn: "Retained Earnings", debit: 0, credit: 103000, category: "Equity", subCategory: "Equity" },
+
+            // الإيرادات والمبيعات
+            { code: "4110", nameAr: "إيرادات بيع المنتجات والسلع", nameEn: "Revenues from Goods Sold", debit: 0, credit: 410000, category: "Revenues", subCategory: "Revenues" },
+            { code: "4120", nameAr: "إيرادات تقديم الخدمات الفنية والصيانة", nameEn: "Revenues from Services Rendered", debit: 0, credit: 75000, category: "Revenues", subCategory: "Revenues" },
+            { code: "4150", nameAr: "خصومات ومسموحات مبيعات ممنوحة للعملاء", nameEn: "Sales Discounts & Allowances", debit: 10000, credit: 0, category: "Revenues", subCategory: "Revenues" }, // حساب مقابل للإيرادات
+
+            // المصروفات المباشرة والتكاليف التشغيلية (تكلفة المبيعات)
+            { code: "5110", nameAr: "تكلفة المواد الخام المباشرة المستخدمة", nameEn: "Direct Materials Consumed", debit: 130000, credit: 0, category: "Expenses", subCategory: "COGS" },
+            { code: "5120", nameAr: "تكلفة الأجور المباشرة والعمالة الإنتاجية", nameEn: "Direct Labor Costs", debit: 50000, credit: 0, category: "Expenses", subCategory: "COGS" },
+            { code: "5130", nameAr: "مصاريف صناعية غير مباشرة وإيجار المصنع والتشغيل", nameEn: "Indirect Manufacturing Overheads", debit: 30000, credit: 0, category: "Expenses", subCategory: "COGS" },
+
+            // المصاريف الإدارية والعمومية والتسويقية (المصاريف التشغيلية OPEX)
+            { code: "5211", nameAr: "رواتب ومنافع موظفي الإدارة العامة", nameEn: "Administrative Salaries & Employee Benefits", debit: 55000, credit: 0, category: "Expenses", subCategory: "OPEX" },
+            { code: "5212", nameAr: "إيجار المكاتب الإدارية والكهرباء والاتصالات", nameEn: "Office Rents, Utilities & Communications", debit: 20000, credit: 0, category: "Expenses", subCategory: "OPEX" },
+            { code: "5213", nameAr: "مصاريف التسويق والإعلانات والبيع والتوزيع", nameEn: "Marketing, Advertising & Distribution", debit: 15000, credit: 0, category: "Expenses", subCategory: "OPEX" },
+            { code: "5214", nameAr: "استهلاك الأصول الثابتة وإطفاء الفترة الحالي", nameEn: "Depreciation & Amortization Expense", debit: 10000, credit: 0, category: "Expenses", subCategory: "OPEX" },
+            { code: "5215", nameAr: "مصروف مخصص الديون والائتمان للفترة", nameEn: "ECL Provision Expense for the Period", debit: 5000, credit: 0, category: "Expenses", subCategory: "OPEX" },
+
+            // تكاليف التمويل والزكاة والضرائب
+            { code: "5310", nameAr: "تكاليف تمويلية وفوائد بنكية مدفوعة", nameEn: "Finance Costs & Bank Interest Expense", debit: 12000, credit: 0, category: "Expenses", subCategory: "Finance" },
+            { code: "5410", nameAr: "مصروف الزكاة الشرعية وضريبة الدخل التقديرية", nameEn: "Zakat & Income Tax Expense for the Period", debit: 8000, credit: 0, category: "Expenses", subCategory: "Tax" }
         ];
 
         function App() {
             // إدارة الصفحات والواجهات النشطة
-            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, ingestion, ratios, risk, forecasting
+            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, statements, ingestion, ratios, risk, forecasting
+            const [activeStatementTab, setActiveStatementTab] = useState('income'); // income, balance, cashflow
             // إدارة ميزان المراجعة النشط في النظام
             const [trialBalance, setTrialBalance] = useState(defaultTrialBalance);
             // الفترة المالية المختارة
             const [selectedPeriod, setSelectedPeriod] = useState('2026-05');
-            // دور المستخدم النشط للتجربة المتكاملة
-            const [userRole, setUserRole] = useState('CFO'); // CFO, ChiefAccountant, Junior
-            // لغة الواجهة الفرعية للمصطلحات المالية
-            const [lang, setLang] = useState('ar');
+            // متغيرات لوحة محاكاة السيناريوهات المالية (ماذا لو؟)
+            const [simSalesGrowth, setSimSalesGrowth] = useState(0); // نسبة التغيير المتوقعة في المبيعات %
+            const [simCogsRatio, setSimCogsRatio] = useState(44); // نسبة تكلفة البضاعة المباعة إلى المبيعات %
+            const [simOpexRatio, setSimOpexRatio] = useState(22); // نسبة المصاريف الإدارية إلى المبيعات %
 
-            // دالة لحساب المؤشرات المالية الأساسية ديناميكياً من ميزان المراجعة الحالي
+            // دالة لحساب المؤشرات المالية والقوائم بشكل فوري ومترابط من ميزان المراجعة الفعلي
             const calculateFinancials = () => {
                 let cash = 0;
+                let bank = 0;
+                let stInvestments = 0;
                 let receivables = 0;
-                let inventory = 0;
-                let fixedAssets = 0;
+                let eclAllowance = 0;
+                let rawMaterials = 0;
+                let wip = 0;
+                let finishedGoods = 0;
+                let prepaids = 0;
+                let dueFromRelated = 0;
+                let lands = 0;
+                let buildings = 0;
+                let machinery = 0;
+                let accumDepr = 0;
+                let intangibleAssets = 0;
+
                 let payables = 0;
-                let shortLoans = 0;
+                let accruedExp = 0;
+                let customerAdvances = 0;
+                let shortTermLoans = 0;
+                let dueToRelated = 0;
+                let zakatProvision = 0;
+                let longTermLoans = 0;
+                let endOfServiceProvision = 0;
+
                 let capital = 0;
+                let statutoryReserve = 0;
                 let retainedEarnings = 0;
-                let sales = 0;
-                let cogs = 0;
-                let opex = 0;
+
+                let revenueGoods = 0;
+                let revenueServices = 0;
+                let salesDiscounts = 0;
+
+                let cogsMaterials = 0;
+                let cogsLabor = 0;
+                let cogsOverhead = 0;
+
+                let opexSalaries = 0;
+                let opexRent = 0;
+                let opexMarketing = 0;
+                let opexDepreciation = 0;
+                let opexEcl = 0;
+
                 let financeCosts = 0;
+                let zakatTaxExpense = 0;
 
                 trialBalance.forEach(item => {
                     const code = parseInt(item.code);
-                    const netAmt = (item.debit || 0) - (item.credit || 0);
-                    
-                    // تصنيف منطقي ذكي بناءً على كود الحساب ومعايير IFRS
-                    if (code === 1110) cash += netAmt;
-                    else if (code === 1120) receivables += netAmt;
-                    else if (code === 1130) inventory += netAmt;
-                    else if (code === 1210) fixedAssets += netAmt;
-                    else if (code === 2110) payables += Math.abs(netAmt);
-                    else if (code === 2120) shortLoans += Math.abs(netAmt);
-                    else if (code === 3100) capital += Math.abs(netAmt);
-                    else if (code === 3200) retainedEarnings += Math.abs(netAmt);
-                    else if (code === 4100) sales += Math.abs(netAmt);
-                    else if (code === 5100) cogs += netAmt;
-                    else if (code === 5200) opex += netAmt;
-                    else if (code === 5300) financeCosts += netAmt;
+                    const debitAmt = parseFloat(item.debit) || 0;
+                    const creditAmt = parseFloat(item.credit) || 0;
+                    const netAmt = debitAmt - creditAmt;
+
+                    switch(code) {
+                        case 1111: cash += netAmt; break;
+                        case 1112: bank += netAmt; break;
+                        case 1113: stInvestments += netAmt; break;
+                        case 1120: receivables += netAmt; break;
+                        case 1125: eclAllowance += creditAmt; break; // رصيد دائن بطبيعته
+                        case 1131: rawMaterials += netAmt; break;
+                        case 1132: wip += netAmt; break;
+                        case 1133: finishedGoods += netAmt; break;
+                        case 1140: prepaids += netAmt; break;
+                        case 1150: dueFromRelated += netAmt; break;
+                        case 1211: lands += netAmt; break;
+                        case 1212: buildings += netAmt; break;
+                        case 1213: machinery += netAmt; break;
+                        case 1214: accumDepr += creditAmt; break; // رصيد دائن بطبيعته
+                        case 1220: intangibleAssets += netAmt; break;
+
+                        case 2111: payables += creditAmt; break;
+                        case 2112: accruedExp += creditAmt; break;
+                        case 2113: customerAdvances += creditAmt; break;
+                        case 2121: shortTermLoans += creditAmt; break;
+                        case 2130: dueToRelated += creditAmt; break;
+                        case 2140: zakatProvision += creditAmt; break;
+
+                        case 2211: longTermLoans += creditAmt; break;
+                        case 2220: endOfServiceProvision += creditAmt; break;
+
+                        case 3100: capital += creditAmt; break;
+                        case 3150: statutoryReserve += creditAmt; break;
+                        case 3200: retainedEarnings += creditAmt; break;
+
+                        case 4110: revenueGoods += creditAmt; break;
+                        case 4120: revenueServices += creditAmt; break;
+                        case 4150: salesDiscounts += debitAmt; break; // رصيد مدين بطبيعته كخصم
+
+                        case 5110: cogsMaterials += debitAmt; break;
+                        case 5120: cogsLabor += debitAmt; break;
+                        case 5130: cogsOverhead += debitAmt; break;
+
+                        case 5211: opexSalaries += debitAmt; break;
+                        case 5212: opexRent += debitAmt; break;
+                        case 5213: opexMarketing += debitAmt; break;
+                        case 5214: opexDepreciation += debitAmt; break;
+                        case 5215: opexEcl += debitAmt; break;
+
+                        case 5310: financeCosts += debitAmt; break;
+                        case 5410: zakatTaxExpense += debitAmt; break;
+                        default: break;
+                    }
                 });
 
-                // العمليات الحسابية المترابطة
-                const totalCurrentAssets = cash + receivables + inventory;
-                const totalCurrentLiabilities = payables + shortLoans;
-                const totalAssets = totalCurrentAssets + fixedAssets;
-                
-                const grossProfit = sales - cogs;
-                const ebit = grossProfit - opex; // الربح التشغيلي قبل الفوائد والضرائب
-                const netIncome = ebit - financeCosts;
-                
-                const workingCapital = totalCurrentAssets - totalCurrentLiabilities;
+                // تجميع الهياكل والمستويات المالية الكلية
+                const totalCashAndEquivalents = cash + bank + stInvestments;
+                const netReceivables = receivables - eclAllowance;
+                const totalInventory = rawMaterials + wip + finishedGoods;
+                const totalCurrentAssets = totalCashAndEquivalents + netReceivables + totalInventory + prepaids + dueFromRelated;
+
+                const netFixedAssets = lands + buildings + machinery - accumDepr;
+                const totalNonCurrentAssets = netFixedAssets + intangibleAssets;
+                const totalAssets = totalCurrentAssets + totalNonCurrentAssets;
+
+                const totalPayables = payables + accruedExp + customerAdvances;
+                const totalCurrentLiabilities = totalPayables + shortTermLoans + dueToRelated + zakatProvision;
+                const totalNonCurrentLiabilities = longTermLoans + endOfServiceProvision;
+                const totalLiabilities = totalCurrentLiabilities + totalNonCurrentLiabilities;
+
+                // إجمالي حقوق الملكية قبل إضافة أرباح الفترة الحالية
+                const baseEquity = capital + statutoryReserve + retainedEarnings;
+
+                // قائمة الدخل التفصيلية
+                const netSales = revenueGoods + revenueServices - salesDiscounts;
+                const totalCogs = cogsMaterials + cogsLabor + cogsOverhead;
+                const grossProfit = netSales - totalCogs;
+                const totalOpex = opexSalaries + opexRent + opexMarketing + opexDepreciation + opexEcl;
+                const operatingProfit = grossProfit - totalOpex; // الربح التشغيلي قبل الفوائد والزكاة (EBIT)
+                const netIncomeBeforeZakat = operatingProfit - financeCosts;
+                const netIncome = netIncomeBeforeZakat - zakatTaxExpense; // صافي الربح النهائي للفترة
+
+                // إجمالي حقوق الملكية النهائي
+                const totalEquity = baseEquity + netIncome;
+
+                // المؤشرات والنسب
                 const currentRatio = totalCurrentLiabilities > 0 ? (totalCurrentAssets / totalCurrentLiabilities).toFixed(2) : "N/A";
-                const quickRatio = totalCurrentLiabilities > 0 ? ((cash + receivables) / totalCurrentLiabilities).toFixed(2) : "N/A";
-                const debtToEquity = (capital + retainedEarnings) > 0 ? ((totalCurrentLiabilities / (capital + retainedEarnings)) * 100).toFixed(1) : "N/A";
-                
-                // حساب مؤشرات التشغيل والأيام
-                const dso = sales > 0 ? Math.round((receivables / sales) * 365) : 0; // أيام تحصيل العملاء
-                const dio = cogs > 0 ? Math.round((inventory / cogs) * 365) : 0;     // أيام بقاء المخزون
-                const dpo = cogs > 0 ? Math.round((payables / cogs) * 365) : 0;      // أيام سداد الموردين
-                const ccc = (dso + dio) - dpo; // دورة التحول النقدي
+                const quickRatio = totalCurrentLiabilities > 0 ? ((totalCashAndEquivalents + netReceivables) / totalCurrentLiabilities).toFixed(2) : "N/A";
+                const debtToEquity = totalEquity > 0 ? ((totalLiabilities / totalEquity) * 100).toFixed(1) : "N/A";
+                const returnOnEquity = totalEquity > 0 ? ((netIncome / totalEquity) * 100).toFixed(1) : "N/A";
+                const returnOnAssets = totalAssets > 0 ? ((netIncome / totalAssets) * 100).toFixed(1) : "N/A";
+
+                const workingCapital = totalCurrentAssets - totalCurrentLiabilities;
+
+                // دراسة كفاءة رأس المال العامل وأعمار الذمم
+                const dso = netSales > 0 ? Math.round((netReceivables / netSales) * 365) : 0; // فترة تحصيل العملاء
+                const dio = totalCogs > 0 ? Math.round((totalInventory / totalCogs) * 365) : 0; // فترة بقاء المخزون
+                const dpo = totalCogs > 0 ? Math.round((payables / totalCogs) * 365) : 0; // فترة سداد الموردين
+                const ccc = (dso + dio) - dpo; // دورة التحويل النقدي المجمعة
 
                 return {
-                    cash, receivables, inventory, payables, sales, cogs, opex, netIncome, grossProfit, ebit,
-                    totalCurrentAssets, totalCurrentLiabilities, workingCapital, currentRatio, quickRatio,
-                    debtToEquity, dso, dio, dpo, ccc
+                    totalCashAndEquivalents, netReceivables, totalInventory, totalCurrentAssets,
+                    netFixedAssets, totalNonCurrentAssets, totalAssets,
+                    totalPayables, totalCurrentLiabilities, totalNonCurrentLiabilities, totalLiabilities,
+                    baseEquity, totalEquity,
+                    netSales, totalCogs, grossProfit, totalOpex, operatingProfit, netIncomeBeforeZakat, netIncome,
+                    currentRatio, quickRatio, debtToEquity, returnOnEquity, returnOnAssets, workingCapital,
+                    dso, dio, dpo, ccc,
+                    // تفاصيل الأرصدة لعرض القوائم
+                    cash, bank, stInvestments, receivables, eclAllowance, rawMaterials, wip, finishedGoods, prepaids, dueFromRelated,
+                    lands, buildings, machinery, accumDepr, intangibleAssets, payables, accruedExp, customerAdvances,
+                    shortTermLoans, dueToRelated, zakatProvision, longTermLoans, endOfServiceProvision, capital, statutoryReserve, retainedEarnings,
+                    revenueGoods, revenueServices, salesDiscounts, cogsMaterials, cogsLabor, cogsOverhead,
+                    opexSalaries, opexRent, opexMarketing, opexDepreciation, opexEcl, financeCosts, zakatTaxExpense
                 };
             };
 
             const fin = calculateFinancials();
 
-            // دالة مساعدة لتنسيق المبالغ المالية بطريقة عربية فخمة
+            // دالة تنسيق الأرقام لعرض المبالغ النقدية بالريال السعودي بشكل منسق واحترافي
             const formatCurrency = (val) => {
                 return new Intl.NumberFormat('ar-SA', { style: 'currency', currency: 'SAR', maximumFractionDigits: 0 }).format(val);
             };
 
-            // تشغيل مكتبة الأيقونات بعد رندر الصفحة لضمان ظهورها
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            }, [currentView, userRole]);
+            // حسابات المحاكاة اللحظية لسيناريوهات "ماذا لو؟"
+            const simulatedSales = fin.netSales * (1 + simSalesGrowth / 100);
+            const simulatedCogs = simulatedSales * (simCogsRatio / 100);
+            const simulatedGrossProfit = simulatedSales - simulatedCogs;
+            const simulatedOpex = simulatedSales * (simOpexRatio / 100);
+            const simulatedEbit = simulatedGrossProfit - simulatedOpex;
+            const simulatedNetIncome = simulatedEbit - fin.financeCosts - fin.zakatTaxExpense;
 
-            // دالة لتوليد ملف إكسل تجريبي جاهز كقالب للمستخدم للتنزيل الفوري
+            // دالة لتنزيل قالب إكسل فارغ تماماً يحتوي فقط على الهيدر بناءً على التوجيهات الفنية
             const downloadExcelTemplate = () => {
                 const wsData = [
-                    ["كود الحساب (Account Code)", "اسم الحساب - عربي (Account Name AR)", "اسم الحساب - إنجليزي (Account Name EN)", "مدين (Debit)", "دائن (Credit)", "الفترة المالية (Period)"],
-                    ["1110", "النقد وما في حكمه", "Cash & Cash Equivalents", 150000, 0, "2026-05"],
-                    ["1120", "العملاء (الذمم المدينة)", "Trade Receivables", 95000, 0, "2026-05"],
-                    ["1130", "المخزون السلعي", "Inventory", 180000, 0, "2026-05"],
-                    ["1210", "الأصول الثابتة (بالصافي)", "Property, Plant & Equipment", 400000, 0, "2026-05"],
-                    ["2110", "الموردون (الذمم الدائنة)", "Trade Payables", 0, 80000, "2026-05"],
-                    ["2120", "قروض قصيرة الأجل", "Short-term Loans", 0, 40000, "2026-05"],
-                    ["3100", "رأس المال المدفوع", "Share Capital", 0, 500000, "2026-05"],
-                    ["3200", "الأرباح المبقاة (المدورة)", "Retained Earnings", 0, 100000, "2026-05"],
-                    ["4100", "إيرادات المبيعات والخدمات", "Sales Revenues", 0, 350000, "2026-05"],
-                    ["5100", "تكلفة البضاعة المباعة (COGS)", "Cost of Goods Sold", 175000, 0, "2026-05"],
-                    ["5200", "المصروفات الإدارية والعمومية", "General & Administrative Expenses", 60000, 0, "2026-05"],
-                    ["5300", "تكاليف التمويل والفوائد", "Finance Costs", 10000, 0, "2026-05"]
+                    ["كود الحساب (Account Code)", "اسم الحساب - عربي (Account Name AR)", "اسم الحساب - إنجليزي (Account Name EN)", "مدين (Debit)", "دائن (Credit)", "الفترة المالية (Period)"]
                 ];
                 
                 const wb = XLSX.utils.book_new();
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
-                XLSX.utils.book_append_sheet(wb, ws, "Trial Balance Template");
+                XLSX.utils.book_append_sheet(wb, ws, "IFRS Trial Balance Template");
                 XLSX.writeFile(wb, `IFRS_Trial_Balance_Template_${selectedPeriod}.xlsx`);
             };
 
-            // دالة للتعامل مع رفع ملف الإكسل الفعلي وقراءته فورياً وتحديث المنصة بالكامل!
+            // قراءة ومعالجة ميزان المراجعة المرفوع وتحديث شاشات المنصة تلقائياً وبدقة بشرية
             const handleExcelUpload = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -213,9 +362,8 @@
                     const worksheet = workbook.Sheets[firstSheetName];
                     const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-                    // معالجة البيانات وتحويلها إلى ميزان مراجعة محدث ومطابق للشجرة
                     const parsedBalance = [];
-                    // نبدأ من السطر الثاني لتجاوز العناوين
+                    // تخطي الصف الأول المخصص للعناوين والبدء من الصف الثاني لقراءة الأرصدة
                     for (let i = 1; i < json.length; i++) {
                         const row = json[i];
                         if (row[0] && row[1]) {
@@ -232,119 +380,118 @@
 
                     if (parsedBalance.length > 0) {
                         setTrialBalance(parsedBalance);
-                        alert("تم رفع ميزان المراجعة وقراءته بنجاح! تم تحديث لوحة القيادة والنسب المالية فوراً.");
+                        alert("تم استيراد ميزان المراجعة بنجاح! تم ربط الحسابات وتحديث لوحات العرض والتقارير المالية فوراً وبدقة تامة.");
                         setCurrentView('dashboard');
                     } else {
-                        alert("خطأ: لم نتمكن من قراءة البيانات بالشكل الصحيح. تأكد من استخدام القالب الخاص بنا.");
+                        alert("تنبيه: لم نتمكن من العثور على سجلات صالحة في الملف المرفوع. يرجى التأكد من مطابقة الملف لقالب الإدخال الخاص بالمنصة.");
                     }
                 };
                 reader.readAsBinaryString(file);
             };
 
             return (
-                <div class="min-h-screen flex bg-slate-50 text-slate-800">
+                <div class="min-h-screen flex bg-slate-50/50 text-slate-800">
                     
-                    {/* 1. القائمة الجانبية (Sidebar) - الهوية البصرية الداكنة الفخمة */}
-                    <aside class="w-72 bg-slate-900 text-white flex flex-col justify-between shadow-xl transition-all duration-300">
+                    {/* 1. القائمة الجانبية (Sidebar) */}
+                    <aside class="w-80 bg-slate-900 text-white flex flex-col justify-between shadow-xl transition-all duration-300">
                         <div>
-                            {/* الشعار والهوية التجارية */}
+                            {/* الشعار والهوية البصرية الاحترافية */}
                             <div class="p-6 border-b border-slate-800 flex items-center space-x-3 space-x-reverse">
-                                <div class="bg-emerald-500 text-slate-900 p-2 rounded-xl shadow-md shadow-emerald-500/20">
+                                <div class="bg-emerald-500 text-slate-900 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
                                     <i data-lucide="trending-up" class="w-6 h-6"></i>
                                 </div>
                                 <div>
-                                    <h1 class="text-lg font-bold leading-none tracking-wide text-white">فينتيك برو</h1>
-                                    <span class="text-xs text-emerald-400 font-semibold">تحليل مالي فائق الذكاء</span>
+                                    <h1 class="text-lg font-extrabold leading-none tracking-wide text-white">منصة التحليل المالي</h1>
+                                    <span class="text-[11px] text-emerald-400 font-bold mt-1 block">التحليل وإعداد التقارير الفنية</span>
                                 </div>
                             </div>
 
-                            {/* قائمة الروابط والتنقل السهل والسلس */}
-                            <nav class="p-4 space-y-2">
-                                <p class="text-xs font-semibold text-slate-500 px-3 uppercase tracking-wider">التحليل الرئيسي</p>
+                            {/* روابط التنقل السهلة بين شاشات التحليل المالي المترابط */}
+                            <nav class="p-4 space-y-1.5">
+                                <p class="text-[11px] font-bold text-slate-500 px-3 uppercase tracking-wider mb-2">مستويات الدراسة والتحليل</p>
                                 
                                 <button 
                                     onClick={() => setCurrentView('dashboard')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'dashboard' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'dashboard' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
                                     <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                                    <span>لوحة القيادة التنفيذية (CFO)</span>
+                                    <span>لوحة الأداء العام والملخص</span>
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('statements')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'statements' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="book-open" class="w-5 h-5"></i>
+                                    <span>القوائم المالية والتقارير الدورية</span>
                                 </button>
 
                                 <button 
                                     onClick={() => setCurrentView('ingestion')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'ingestion' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'ingestion' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
                                     <i data-lucide="file-up" class="w-5 h-5"></i>
-                                    <span>بوابة رفع البيانات والمدقق</span>
+                                    <span>بوابة رفع البيانات ومطابقة الأرصدة</span>
                                 </button>
 
                                 <button 
                                     onClick={() => setCurrentView('ratios')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'ratios' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'ratios' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
                                     <i data-lucide="percent" class="w-5 h-5"></i>
-                                    <span>مركز النسب المالية والتحليل</span>
+                                    <span>مركز النسب المالية والتحليل المقارن</span>
                                 </button>
 
-                                <p class="text-xs font-semibold text-slate-500 px-3 pt-4 uppercase tracking-wider">الذكاء الاستباقي</p>
+                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-6 uppercase tracking-wider mb-2">أدوات التخطيط والمخاطر</p>
 
                                 <button 
                                     onClick={() => setCurrentView('risk')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'risk' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'risk' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
                                     <i data-lucide="shield-alert" class="w-5 h-5"></i>
-                                    <span>رادار المخاطر والتنبيهات</span>
+                                    <span>تقرير المخاطر والتنبيهات التشغيلية</span>
                                 </button>
 
                                 <button 
                                     onClick={() => setCurrentView('forecasting')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-semibold ${currentView === 'forecasting' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'forecasting' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
                                     <i data-lucide="line-chart" class="w-5 h-5"></i>
-                                    <span>التنبؤ المالي وتدفق النقد</span>
+                                    <span>التقديرات والتدفقات النقدية المستقبلية</span>
                                 </button>
                             </nav>
                         </div>
-
-                        {/* معلومات المستخدم ودور الإدارة في أسفل السايدبار */}
-                        <div class="p-4 border-t border-slate-800">
-                            <div class="bg-slate-800/50 p-4 rounded-xl border border-slate-800 flex flex-col space-y-2">
-                                <span class="text-xs text-slate-400 font-medium">مستوى الصلاحية النشط:</span>
-                                <div class="flex items-center space-x-2 space-x-reverse">
-                                    <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
-                                    <span class="text-sm font-bold text-white">
-                                        {userRole === 'CFO' && "المدير المالي (CFO)"}
-                                        {userRole === 'ChiefAccountant' && "رئيس الحسابات"}
-                                        {userRole === 'Junior' && "محاسب مبتدئ / مدخل بيانات"}
-                                    </span>
+                        
+                        <div class="p-6 border-t border-slate-800">
+                            <div class="flex items-center space-x-3 space-x-reverse text-slate-400">
+                                <div class="bg-slate-800 p-2 rounded-lg text-emerald-400">
+                                    <i data-lucide="award" class="w-5 h-5"></i>
+                                </div>
+                                <div class="text-xs leading-relaxed">
+                                    <p class="font-bold text-white">إعداد وإشراف مهني:</p>
+                                    <p class="text-slate-500 text-[10px]">خبير مالي معتمد - موازنة IFRS</p>
                                 </div>
                             </div>
                         </div>
                     </aside>
 
-                    {/* 2. منطقة العمل الرئيسية والمستجيبة بالكامل (Main Area) */}
+                    {/* 2. منطقة العمل الرئيسية (Main Area) */}
                     <main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
                         
-                        {/* شريط الأدوات العلوي (Top Navbar) */}
+                        {/* شريط الأدوات العلوي المبسط */}
                         <header class="bg-white border-b border-slate-200 h-20 px-8 flex items-center justify-between sticky top-0 z-10 shadow-sm">
                             <div class="flex items-center space-x-6 space-x-reverse">
-                                <h2 class="text-xl font-bold text-slate-900">
-                                    {currentView === 'dashboard' && "لوحة القيادة التنفيذية الشاملة"}
-                                    {currentView === 'ingestion' && "بوابة رفع ميزان المراجعة والتدقيق"}
-                                    {currentView === 'ratios' && "مركز النسب المالية المتطورة"}
-                                    {currentView === 'risk' && "رادار المخاطر والتحذيرات الاستباقية"}
-                                    {currentView === 'forecasting' && "محرك التنبؤ المالي والتدفقات المستقبلية"}
+                                <h2 class="text-xl font-extrabold text-slate-900">
+                                    {currentView === 'dashboard' && "لوحة الأداء المالي العام"}
+                                    {currentView === 'statements' && "مركز إعداد القوائم المالية المستخلصة (IFRS)"}
+                                    {currentView === 'ingestion' && "بوابة التحميل والتدقيق المحاسبي لميزان المراجعة"}
+                                    {currentView === 'ratios' && "مركز دراسة وتحليل النسب والمؤشرات المالية"}
+                                    {currentView === 'risk' && "كشف التقييم المالي والوقاية من مخاطر التشغيل"}
+                                    {currentView === 'forecasting' && "لوحة محاكاة التقديرات والتدفقات النقدية المتوقعة"}
                                 </h2>
-                                
-                                {/* فلتر تحديد نوع المستخدم للتجربة التفاعلية */}
-                                <div class="flex bg-slate-100 p-1 rounded-lg text-xs font-semibold border border-slate-200">
-                                    <button onClick={() => setUserRole('CFO')} class={`px-3 py-1.5 rounded-md transition-all ${userRole === 'CFO' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>CFO</button>
-                                    <button onClick={() => setUserRole('ChiefAccountant')} class={`px-3 py-1.5 rounded-md transition-all ${userRole === 'ChiefAccountant' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>رئيس الحسابات</button>
-                                    <button onClick={() => setUserRole('Junior')} class={`px-3 py-1.5 rounded-md transition-all ${userRole === 'Junior' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900'}`}>محاسب مبتدئ</button>
-                                </div>
                             </div>
 
-                            {/* أدوات المزامنة، اختيار التاريخ وتنزيل القالب الذكي */}
+                            {/* تحديد الفترة وتنزيل القالب المحاسبي المعتمد */}
                             <div class="flex items-center space-x-4 space-x-reverse">
                                 <div class="flex items-center space-x-2 space-x-reverse">
                                     <span class="text-xs text-slate-500 font-bold">الفترة المالية:</span>
@@ -361,43 +508,41 @@
                                     class="bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 px-4 py-2 rounded-lg text-sm font-bold flex items-center space-x-2 space-x-reverse transition-all"
                                 >
                                     <i data-lucide="download" class="w-4 h-4"></i>
-                                    <span>تنزيل قالب ميزان المراجعة (Excel)</span>
+                                    <span>تحميل نموذج ميزان المراجعة الفارغ (Excel)</span>
                                 </button>
                             </div>
                         </header>
 
-                        {/* مساحة الرندرة الديناميكية (التبديل بين الواجهات) */}
+                        {/* مساحة رندرة الصفحات حسب الاختيار الفعلي من القائمة */}
                         <div class="p-8 flex-1 max-w-7xl w-full mx-auto space-y-8 fade-in">
                             
-                            {/* إشعار مخصص حسب دور المستخدم لشرح ما يراه المحاسب أو المدير المالي */}
+                            {/* إرشادات تشغيل احترافية ومبسطة ترشد المستخدم بخطوات الخبير البشري */}
                             <div class="bg-emerald-50/50 border border-emerald-200/60 rounded-2xl p-4 flex items-start space-x-3 space-x-reverse">
                                 <div class="bg-emerald-500 text-white p-2 rounded-xl mt-0.5">
                                     <i data-lucide="info" class="w-5 h-5"></i>
                                 </div>
                                 <div class="space-y-1">
-                                    <h4 class="font-bold text-emerald-950 text-sm">مساعد الذكاء المالي النشط لـ {userRole === 'CFO' ? 'المدير المالي' : userRole === 'ChiefAccountant' ? 'رئيس الحسابات' : 'المحاسب'}:</h4>
+                                    <h4 class="font-bold text-emerald-950 text-xs">دليل تشغيل المنصة والخطوات المهنية:</h4>
                                     <p class="text-xs text-emerald-800 leading-relaxed">
-                                        {userRole === 'CFO' && "أهلاً بك يا سعادة المدير المالي. قمنا بالربط الشبكي بين التدفقات وقوائم الربحية لنمنحك رؤية استراتيجية واضحة حول رأس المال العامل، رادار المخاطر، وفترات التنبؤ المستقبلية للتفاوض مع الموردين."}
-                                        {userRole === 'ChiefAccountant' && "مرحباً بك يا رئيس الحسابات. نقوم بمراقبة توازن الحسابات ومراجعة فروقات الأقفال الشهري وتدقيق الأرصدة الشاذة غير الطبيعية في ميزان المراجعة."}
-                                        {userRole === 'Junior' && "مرحباً بك. يرجى تحميل قالب الإكسل الجاهز، وتعبئته بأرصدة الفترة المالية، ثم سحبه وإسقاطه في بوابة الرفع وسيقوم النظام الذكي بمراجعة التوازن وتوليد التحليلات فوراً نيابة عنك!"}
+                                        مرحباً بك في بوابتك المهنية المخصصة لمطابقة وتدقيق موازين المراجعة الدورية وتوليد التقارير القياسية وفقاً لمعايير التقارير المالية الدولية (IFRS). يرجى الضغط على زر تحميل القالب الفارغ لتنزيل ملف الإدخال والبدء بتسجيل أرصدة الحسابات الخاصة بالفترة وتثبيت أكوادها، ثم إسقاط الملف في بوابة رفع البيانات لتحديث جميع لوحات العرض والتقديرات التشغيلية فوراً وبدقة تامة.
                                     </p>
                                 </div>
                             </div>
 
-                            {/* ==================== الواجهة 1: لوحة القيادة التنفيذية (Dashboard) ==================== */}
+                            {/* ==================== الواجهة 1: لوحة الأداء العام والملخص التنفيذي (Dashboard) ==================== */}
                             {currentView === 'dashboard' && (
                                 <div class="space-y-8">
-                                    {/* صف بطاقات الأداء المالي (KPIs Cards) */}
+                                    {/* بطاقات المؤشرات المالية الرئيسية المحسوبة */}
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                         
-                                        {/* بطاقة المبيعات */}
+                                        {/* مبيعات الفترة */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                                             <div class="space-y-2">
-                                                <span class="text-xs font-semibold text-slate-500">إجمالي المبيعات (قائمة الدخل)</span>
-                                                <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.sales)}</h3>
+                                                <span class="text-xs font-semibold text-slate-500">صافي مبيعات وإيرادات الفترة</span>
+                                                <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.netSales)}</h3>
                                                 <div class="flex items-center space-x-1 space-x-reverse text-xs text-emerald-600 font-bold">
                                                     <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                                                    <span>+12.4% عن الشهر السابق</span>
+                                                    <span>مبيعات منتجات سلع وخدمات</span>
                                                 </div>
                                             </div>
                                             <div class="bg-blue-50 text-blue-600 p-4 rounded-2xl">
@@ -405,14 +550,14 @@
                                             </div>
                                         </div>
 
-                                        {/* بطاقة صافي الربح */}
+                                        {/* صافي الربح الفعلي */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                                             <div class="space-y-2">
-                                                <span class="text-xs font-semibold text-slate-500">صافي الربح الصافي</span>
+                                                <span class="text-xs font-semibold text-slate-500">صافي الربح المالي النهائي</span>
                                                 <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.netIncome)}</h3>
                                                 <div class="flex items-center space-x-1 space-x-reverse text-xs text-emerald-600 font-bold">
                                                     <i data-lucide="arrow-up-right" class="w-3.5 h-3.5"></i>
-                                                    <span>هامش صافي {((fin.netIncome / fin.sales)*100).toFixed(1)}%</span>
+                                                    <span>هامش صافي {((fin.netIncome / fin.netSales)*100).toFixed(1)}%</span>
                                                 </div>
                                             </div>
                                             <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl">
@@ -420,14 +565,14 @@
                                             </div>
                                         </div>
 
-                                        {/* بطاقة النقد وما في حكمه */}
+                                        {/* السيولة المتوفرة */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                                             <div class="space-y-2">
-                                                <span class="text-xs font-semibold text-slate-500">السيولة النقدية المتاحة</span>
-                                                <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.cash)}</h3>
+                                                <span class="text-xs font-semibold text-slate-500">النقد والنقد المعادل بالبنوك</span>
+                                                <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.totalCashAndEquivalents)}</h3>
                                                 <div class="flex items-center space-x-1 space-x-reverse text-xs text-amber-600 font-bold">
                                                     <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
-                                                    <span>مخزون نقدي كافي لـ 4 أشهر</span>
+                                                    <span>تغطية نقدية جيدة للمصاريف</span>
                                                 </div>
                                             </div>
                                             <div class="bg-emerald-50 text-emerald-600 p-4 rounded-2xl">
@@ -435,14 +580,14 @@
                                             </div>
                                         </div>
 
-                                        {/* بطاقة رأس المال العامل */}
+                                        {/* رأس المال العامل */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-all flex justify-between items-center">
                                             <div class="space-y-2">
                                                 <span class="text-xs font-semibold text-slate-500">رأس المال العامل النشط</span>
                                                 <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.workingCapital)}</h3>
                                                 <div class="flex items-center space-x-1 space-x-reverse text-xs text-emerald-600 font-bold">
                                                     <i data-lucide="activity" class="w-3.5 h-3.5"></i>
-                                                    <span>مستوى سيولة آمن جداً</span>
+                                                    <span>مؤشر سيولة تشغيلية آمن</span>
                                                 </div>
                                             </div>
                                             <div class="bg-purple-50 text-purple-600 p-4 rounded-2xl">
@@ -452,58 +597,58 @@
 
                                     </div>
 
-                                    {/* قسم لوحة التفاعلية ورأس المال العامل المتقدم */}
+                                    {/* لوحة عرض هيكل التدفقات ورأس المال التشغيلي */}
                                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                         
-                                        {/* مؤشرات السيولة السريعة ورأس المال العامل */}
+                                        {/* مؤشرات التداول السيولة السريعة ورأس المال العامل */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6 lg:col-span-2">
                                             <div class="flex justify-between items-center border-b border-slate-100 pb-4">
                                                 <h3 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
                                                     <i data-lucide="gauge" class="text-emerald-500"></i>
-                                                    <span>تحليل السيولة ورأس المال العامل</span>
+                                                    <span>تحليل ملاءة السيولة وتغطية الالتزامات القصيرة</span>
                                                 </h3>
-                                                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold">محسوب من ميزان المراجعة</span>
+                                                <span class="text-xs bg-slate-100 text-slate-600 px-3 py-1 rounded-full font-bold">مستخلص ومطابق محاسبياً</span>
                                             </div>
 
                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                                                     <div class="flex justify-between text-sm">
-                                                        <span class="font-semibold text-slate-500">نسبة التداول الحالية:</span>
-                                                        <span class="font-bold text-emerald-600">{fin.currentRatio}</span>
+                                                        <span class="font-bold text-slate-600">نسبة التداول الحالية (Current Ratio):</span>
+                                                        <span class="font-extrabold text-emerald-600">{fin.currentRatio}</span>
                                                     </div>
                                                     <div class="w-full bg-slate-200 rounded-full h-2.5">
                                                         <div class="bg-emerald-500 h-2.5 rounded-full" style={{ width: `${Math.min((parseFloat(fin.currentRatio)/3)*100, 100)}%` }}></div>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">الحد الآمن العالمي هو 1.5 إلى 2.0. أنت في وضع آمن للغاية.</p>
+                                                    <p class="text-xs text-slate-500">يقيس تغطية أصولك المتداولة البالغة <strong class="text-slate-800">{formatCurrency(fin.totalCurrentAssets)}</strong> للالتزامات المستحقة في الأجل القصير.</p>
                                                 </div>
 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                                                     <div class="flex justify-between text-sm">
-                                                        <span class="font-semibold text-slate-500">النسبة السريعة (بدون المخزون):</span>
-                                                        <span class="font-bold text-blue-600">{fin.quickRatio}</span>
+                                                        <span class="font-bold text-slate-600">النسبة السريعة (Quick Ratio):</span>
+                                                        <span class="font-extrabold text-blue-600">{fin.quickRatio}</span>
                                                     </div>
                                                     <div class="w-full bg-slate-200 rounded-full h-2.5">
                                                         <div class="bg-blue-500 h-2.5 rounded-full" style={{ width: `${Math.min((parseFloat(fin.quickRatio)/2)*100, 100)}%` }}></div>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">تستبعد المخزون لتوضيح قدرة السداد الفورية للالتزامات المستحقة.</p>
+                                                    <p class="text-xs text-slate-500">استبعاد بنود الأصول صعبة التسييل السريع مثل إجمالي المخزون البالغ <strong class="text-slate-800">{formatCurrency(fin.totalInventory)}</strong>.</p>
                                                 </div>
                                             </div>
 
-                                            {/* هيكل الربط المنطقي بين المبيعات والأصول في لوحة القيادة */}
+                                            {/* تعليق الخبير المالي المهني على جودة الحركة النقدية وهيكلية الأصول */}
                                             <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-2">
-                                                <h4 class="text-xs font-bold text-slate-600">رأي المستشار المالي الذكي (CFO Intelligence):</h4>
+                                                <h4 class="text-xs font-bold text-slate-600">رأي المحلل المالي الخبير:</h4>
                                                 <p class="text-xs text-slate-500 leading-relaxed">
-                                                    مبيعاتك البالغة <strong class="text-slate-800">{formatCurrency(fin.sales)}</strong> تدعمها أصول متداولة قوية قيمتها <strong class="text-slate-800">{formatCurrency(fin.totalCurrentAssets)}</strong>. يمثل المخزون منها نسبة <strong class="text-emerald-600">{((fin.inventory/fin.totalCurrentAssets)*100).toFixed(1)}%</strong>. هذه الهيكلية ممتازة، لكن يجب مراقبة فترة بقاء المخزون لتجنب ركود النقد.
+                                                    تشير البيانات المحاسبية المحللة إلى ملاءة مالية مطمئنة جداً. مع ذمم مدينة نشطة بقيمة <strong class="text-slate-800">{formatCurrency(fin.netReceivables)}</strong>، وإجمالي مخزون تشغيلي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.totalInventory)}</strong>. يتضح توازن توزيع الموارد والأصول غير المتداولة ومنها الآلات والمباني بالصافي بمبلغ <strong class="text-slate-800">{formatCurrency(fin.netFixedAssets)}</strong> مما يدعم ثبات الكفاءة الإنتاجية للمنشأة.
                                                 </p>
                                             </div>
                                         </div>
 
-                                        {/* التقرير التلقائي السريع ومؤشرات القوة والضعف */}
+                                        {/* التقرير المالي الفني والتحليلي السريع (نقاط القوة والضعف) */}
                                         <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                                             <div class="border-b border-slate-100 pb-4">
                                                 <h3 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
                                                     <i data-lucide="file-text" class="text-emerald-500"></i>
-                                                    <span>التقرير المالي التلقائي (الخلاصة)</span>
+                                                    <span>التقرير المالي والملخص التحليلي</span>
                                                 </h3>
                                             </div>
 
@@ -511,22 +656,22 @@
                                                 <div>
                                                     <h4 class="text-xs font-bold text-emerald-700 flex items-center space-x-1.5 space-x-reverse mb-2">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                                        <span>نقاط القوة (Strengths)</span>
+                                                        <span>نقاط القوة والمزايا المكتشفة</span>
                                                     </h4>
                                                     <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside pr-2 leading-relaxed">
-                                                        <li>نسبة سيولة ممتازة تبلغ <strong class="text-slate-900">{fin.currentRatio}</strong> مما يعني انعدام مخاطر الإعسار حالياً.</li>
-                                                        <li>هامش ربح إجمالي قوي جداً بحدود <strong class="text-slate-900">{((fin.grossProfit / fin.sales)*100).toFixed(1)}%</strong>.</li>
+                                                        <li>قدرة تداول ممتازة بمقدار <strong class="text-slate-900">{fin.currentRatio}</strong> تدعم المركز الائتماني للشركة.</li>
+                                                        <li>هامش ربح تشغيلي قوي بحدود <strong class="text-slate-900">{((fin.operatingProfit / fin.netSales)*100).toFixed(1)}%</strong> مما يعني انضباط الأعباء والمصاريف العامة.</li>
                                                     </ul>
                                                 </div>
 
                                                 <div class="pt-2 border-t border-slate-100">
                                                     <h4 class="text-xs font-bold text-rose-700 flex items-center space-x-1.5 space-x-reverse mb-2">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span>
-                                                        <span>نقاط الضعف (Weaknesses)</span>
+                                                        <span>ملاحظات ومحاذير يوصى بمتابعتها</span>
                                                     </h4>
                                                     <ul class="text-xs text-slate-600 space-y-2 list-disc list-inside pr-2 leading-relaxed">
-                                                        <li>فترة تحصيل ديون العملاء مرتفعة نسبياً (<strong class="text-slate-900">{fin.dso} يوم</strong>) مما يؤثر على سرعة حركة النقدية.</li>
-                                                        <li>تكلفة التمويل والفوائد تستهلك <strong class="text-slate-900">{((fin.financeCosts / fin.grossProfit)*100).toFixed(1)}%</strong> من مجمل أرباحك.</li>
+                                                        <li>دورة دوران الكاش الإجمالية تبلغ (<strong class="text-slate-900">{fin.ccc} يوم</strong>) مما يوجب تحسين وتيرة البيع والتحصيل للعملاء.</li>
+                                                        <li>التزامات القروض طويلة الأجل بقيمة <strong class="text-slate-900">{formatCurrency(fin.shortTermLoans + fin.longTermLoans)}</strong> تضغط بشكل متوسط على الربحية عبر تكاليف فوائد التمويل.</li>
                                                     </ul>
                                                 </div>
                                             </div>
@@ -536,15 +681,374 @@
                                 </div>
                             )}
 
+                            {/* ==================== الواجهة الجديدة: القوائم المالية الكاملة (Statements) ==================== */}
+                            {currentView === 'statements' && (
+                                <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
+                                    <div class="border-b border-slate-200 pb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div>
+                                            <h3 class="text-lg font-bold text-slate-900">التقارير والقوائم المالية المعتمدة وفقاً لمعايير IFRS</h3>
+                                            <p class="text-sm text-slate-500 mt-1">قوائم مالية تلقائية تم تبويبها وتجميعها من أرصدة ميزان المراجعة لتمثيل حقيقة الوضع المالي للشركة.</p>
+                                        </div>
+                                        
+                                        {/* أزرار التنقل الداخلي بين القوائم الثلاثة */}
+                                        <div class="flex bg-slate-100 p-1 rounded-xl">
+                                            <button 
+                                                onClick={() => setActiveStatementTab('income')}
+                                                class={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeStatementTab === 'income' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                                            >
+                                                قائمة الدخل
+                                            </button>
+                                            <button 
+                                                onClick={() => setActiveStatementTab('balance')}
+                                                class={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeStatementTab === 'balance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                                            >
+                                                قائمة المركز المالي
+                                            </button>
+                                            <button 
+                                                onClick={() => setActiveStatementTab('cashflow')}
+                                                class={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${activeStatementTab === 'cashflow' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                                            >
+                                                قائمة التدفقات النقدية (غير المباشرة)
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* 1. رندرة قائمة الدخل */}
+                                    {activeStatementTab === 'income' && (
+                                        <div class="space-y-6 fade-in">
+                                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                                <table class="w-full text-right border-collapse">
+                                                    <thead>
+                                                        <tr class="bg-slate-900 text-white text-xs font-bold">
+                                                            <th class="p-4">البند المالي</th>
+                                                            <th class="p-4 text-left">الأرصدة بالريال السعودي (SAR)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="text-sm divide-y divide-slate-100">
+                                                        <tr>
+                                                            <td class="p-4 font-semibold">إيرادات مبيعات السلع والمنتجات</td>
+                                                            <td class="p-4 text-left font-semibold text-slate-700">{formatCurrency(fin.revenueGoods)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 font-semibold">إيرادات تقديم الخدمات الفنية والتشغيل</td>
+                                                            <td class="p-4 text-left font-semibold text-slate-700">{formatCurrency(fin.revenueServices)}</td>
+                                                        </tr>
+                                                        <tr class="bg-rose-50/20">
+                                                            <td class="p-4 text-rose-700 font-semibold italic">يخصم: الخصومات والمسموحات الممنوحة للعملاء</td>
+                                                            <td class="p-4 text-left text-rose-700 font-semibold">({formatCurrency(fin.salesDiscounts)})</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-100 font-bold text-slate-900">
+                                                            <td class="p-4">صافي الإيرادات والمبيعات</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.netSales)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">تكلفة المواد الخام المباشرة المستهلكة</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.cogsMaterials)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">تكلفة الأجور المباشرة والإنتاجية</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.cogsLabor)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">المصاريف الصناعية غير المباشرة والتصنيع</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.cogsOverhead)})</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-100 font-bold text-slate-900">
+                                                            <td class="p-4">إجمالي تكلفة المبيعات (COGS)</td>
+                                                            <td class="p-4 text-left">({formatCurrency(fin.totalCogs)})</td>
+                                                        </tr>
+                                                        <tr class="bg-emerald-50/50 font-black text-slate-900 border-y-2 border-slate-300">
+                                                            <td class="p-4 text-emerald-800 text-base">مجمل الربح التشغيلي (Gross Profit)</td>
+                                                            <td class="p-4 text-left text-emerald-800 text-base">{formatCurrency(fin.grossProfit)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">رواتب ومنافع موظفي الإدارة العامة</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.opexSalaries)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">إيجار المكاتب والكهرباء والاتصالات والخدمات العامة</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.opexRent)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">مصاريف التسويق والإعلانات والبيع والتوزيع</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.opexMarketing)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">استهلاك الأصول الثابتة وإطفاء الفترة الحالي</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.opexDepreciation)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-slate-600 italic">مخصص خسائر الائتمان والديون المشكوك فيها</td>
+                                                            <td class="p-4 text-left text-slate-500">({formatCurrency(fin.opexEcl)})</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-100 font-bold text-slate-900">
+                                                            <td class="p-4">إجمالي المصاريف التشغيلية والإدارية (OPEX)</td>
+                                                            <td class="p-4 text-left">({formatCurrency(fin.totalOpex)})</td>
+                                                        </tr>
+                                                        <tr class="bg-blue-50 font-black text-slate-900">
+                                                            <td class="p-4 text-blue-900 text-base">الربح التشغيلي قبل تكاليف التمويل والزكاة (EBIT)</td>
+                                                            <td class="p-4 text-left text-blue-900 text-base">{formatCurrency(fin.operatingProfit)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 font-semibold text-rose-700">تكاليف تمويلية وفوائد بنكية مدفوعة</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.financeCosts)})</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-50 font-bold">
+                                                            <td class="p-4">صافي الربح للفترة قبل الزكاة الشرعية والضرائب</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.netIncomeBeforeZakat)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 font-semibold text-rose-700">مصروف الزكاة الشرعية والضريبة المقدرة للفترة</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.zakatTaxExpense)})</td>
+                                                        </tr>
+                                                        <tr class="bg-emerald-600 text-white font-black border-t-4 border-emerald-700">
+                                                            <td class="p-4 text-lg">صافي الربح المالي النهائي للفترة (Net Income)</td>
+                                                            <td class="p-4 text-left text-lg">{formatCurrency(fin.netIncome)}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 2. رندرة قائمة المركز المالي */}
+                                    {activeStatementTab === 'balance' && (
+                                        <div class="space-y-6 fade-in">
+                                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                                <table class="w-full text-right border-collapse">
+                                                    <thead>
+                                                        <tr class="bg-slate-900 text-white text-xs font-bold">
+                                                            <th class="p-4">البند المالي</th>
+                                                            <th class="p-4 text-left">الأرصدة بالريال السعودي (SAR)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="text-sm divide-y divide-slate-100">
+                                                        {/* الأصول المتداولة */}
+                                                        <tr class="bg-slate-100 font-extrabold text-slate-800">
+                                                            <td class="p-4" colspan="2">الأصول المتداولة (Current Assets)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">النقدية وما في حكمها بالبنوك والصناديق</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.totalCashAndEquivalents)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">العملاء والذمم المدينة التجارية (بالصافي بعد المخصص)</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.netReceivables)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">إجمالي المخزون السلعي (مواد خام، إنتاج تحت التشغيل، تام)</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.totalInventory)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">مصاريف مدفوعة مقدماً وأرصدة مدينة أخرى</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.prepaids)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">مستحق من أطراف ذات علاقة</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.dueFromRelated)}</td>
+                                                        </tr>
+                                                        <tr class="bg-emerald-50 font-bold text-emerald-950">
+                                                            <td class="p-4">إجمالي الأصول المتداولة</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalCurrentAssets)}</td>
+                                                        </tr>
+
+                                                        {/* الأصول غير المتداولة */}
+                                                        <tr class="bg-slate-100 font-extrabold text-slate-800">
+                                                            <td class="p-4" colspan="2">الأصول غير المتداولة (Non-Current Assets)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">الممتلكات والآلات والمعدات الثابتة (صافي القيمة الدفترية)</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.netFixedAssets)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">الأصول غير الملموسة والشهرة</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.intangibleAssets)}</td>
+                                                        </tr>
+                                                        <tr class="bg-emerald-50 font-bold text-emerald-950">
+                                                            <td class="p-4">إجمالي الأصول غير المتداولة</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalNonCurrentAssets)}</td>
+                                                        </tr>
+
+                                                        {/* إجمالي الأصول */}
+                                                        <tr class="bg-emerald-600 text-white font-black border-y-4 border-emerald-700 text-base">
+                                                            <td class="p-4">إجمالي الأصول (Total Assets)</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalAssets)}</td>
+                                                        </tr>
+
+                                                        {/* الالتزامات المتداولة */}
+                                                        <tr class="bg-slate-100 font-extrabold text-slate-800">
+                                                            <td class="p-4" colspan="2">الالتزامات المتداولة (Current Liabilities)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">الموردون والذمم الدائنة التجارية والمستحقات</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.totalPayables)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">قروض وتسهيلات بنكية قصيرة الأجل</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.shortTermLoans)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">مستحقات لأطراف ذات علاقة</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.dueToRelated)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">مخصص الزكاة والضريبة المقدرة</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.zakatProvision)}</td>
+                                                        </tr>
+                                                        <tr class="bg-rose-50 font-bold text-rose-950">
+                                                            <td class="p-4">إجمالي الالتزامات المتداولة</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalCurrentLiabilities)}</td>
+                                                        </tr>
+
+                                                        {/* الالتزامات غير المتداولة */}
+                                                        <tr class="bg-slate-100 font-extrabold text-slate-800">
+                                                            <td class="p-4" colspan="2">الالتزامات غير المتداولة (Non-Current Liabilities)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">التزامات وقروض طويلة الأجل مستحقة البنوك</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.longTermLoans)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">مخصص منافع الموظفين طويلة الأجل (نهاية الخدمة)</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.endOfServiceProvision)}</td>
+                                                        </tr>
+                                                        <tr class="bg-rose-50 font-bold text-rose-950">
+                                                            <td class="p-4">إجمالي الالتزامات غير المتداولة</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalNonCurrentLiabilities)}</td>
+                                                        </tr>
+
+                                                        {/* إجمالي الالتزامات */}
+                                                        <tr class="bg-slate-200 font-extrabold text-slate-900">
+                                                            <td class="p-4">إجمالي الالتزامات (Total Liabilities)</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalLiabilities)}</td>
+                                                        </tr>
+
+                                                        {/* حقوق الملكية */}
+                                                        <tr class="bg-slate-100 font-extrabold text-slate-800">
+                                                            <td class="p-4" colspan="2">حقوق الملكية (Equity)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">رأس المال المدفوع بالكامل</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.capital)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">الاحتياطي النظامي المقتطع</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.statutoryReserve)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">الأرباح المبقاة (المدورة من سنوات سابقة)</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.retainedEarnings)}</td>
+                                                        </tr>
+                                                        <tr class="bg-emerald-50 text-emerald-800 font-bold">
+                                                            <td class="p-4 pl-8">صافي أرباح الفترة التشغيلية الحالية للشركة</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.netIncome)}</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-300 font-black text-slate-900">
+                                                            <td class="p-4">إجمالي حقوق الملكية (Total Equity)</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalEquity)}</td>
+                                                        </tr>
+
+                                                        {/* توازن المركز المالي */}
+                                                        <tr class="bg-blue-600 text-white font-black border-t-4 border-blue-700 text-base">
+                                                            <td class="p-4">إجمالي الالتزامات وحقوق الملكية (Liabilities & Equity)</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalLiabilities + fin.totalEquity)}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 3. رندرة قائمة التدفقات النقدية */}
+                                    {activeStatementTab === 'cashflow' && (
+                                        <div class="space-y-6 fade-in">
+                                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                                <table class="w-full text-right border-collapse">
+                                                    <thead>
+                                                        <tr class="bg-slate-900 text-white text-xs font-bold">
+                                                            <th class="p-4">تفاصيل التدفقات النقدية (الطريقة غير المباشرة)</th>
+                                                            <th class="p-4 text-left">المبلغ بالريال السعودي (SAR)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody class="text-sm divide-y divide-slate-100">
+                                                        <tr class="bg-slate-100 font-extrabold">
+                                                            <td class="p-4" colspan="2">الأنشطة التشغيلية (Operating Activities)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8">صافي الربح قبل الزكاة والضرائب</td>
+                                                            <td class="p-4 text-left text-slate-700 font-semibold">{formatCurrency(fin.netIncomeBeforeZakat)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 italic text-slate-500">تسويات: إضافة استهلاك الأصول وإطفاء الفترة</td>
+                                                            <td class="p-4 text-left text-emerald-600 font-semibold">+{formatCurrency(fin.opexDepreciation)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 italic text-slate-500">تسويات: إضافة مخصص الديون المشكوك فيها</td>
+                                                            <td class="p-4 text-left text-emerald-600 font-semibold">+{formatCurrency(fin.opexEcl)}</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-rose-700">التغير في رأس المال العامل: (زيادة) الذمم المدينة والعملاء</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.netReceivables)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-rose-700">التغير في رأس المال العامل: (زيادة) إجمالي المخزون السلعي</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.totalInventory)})</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-emerald-600">التغير في رأس المال العامل: زيادة الذمم الدائنة والموردين</td>
+                                                            <td class="p-4 text-left text-emerald-600 font-semibold">+{formatCurrency(fin.totalPayables)}</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-50 font-bold">
+                                                            <td class="p-4">صافي النقد المتوفر من الأنشطة التشغيلية</td>
+                                                            <td class="p-4 text-left text-emerald-600">+{formatCurrency(fin.netIncomeBeforeZakat + fin.opexDepreciation + fin.opexEcl - fin.netReceivables - fin.totalInventory + fin.totalPayables)}</td>
+                                                        </tr>
+
+                                                        <tr class="bg-slate-100 font-extrabold">
+                                                            <td class="p-4" colspan="2">الأنشطة الاستثمارية (Investing Activities)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-rose-700">شراء ممتلكات وآلات وتحديث الأصول الثابتة</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.lands + fin.buildings + fin.machinery)})</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-50 font-bold">
+                                                            <td class="p-4">صافي النقد المستخدم في الأنشطة الاستثمارية</td>
+                                                            <td class="p-4 text-left text-rose-700">({formatCurrency(fin.lands + fin.buildings + fin.machinery)})</td>
+                                                        </tr>
+
+                                                        <tr class="bg-slate-100 font-extrabold">
+                                                            <td class="p-4" colspan="2">الأنشطة التمويلية (Financing Activities)</td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td class="p-4 pl-8 text-emerald-600">متحصلات من زيادة وتسهيلات القروض البنكية</td>
+                                                            <td class="p-4 text-left text-emerald-600 font-semibold">+{formatCurrency(fin.shortTermLoans + fin.longTermLoans)}</td>
+                                                        </tr>
+                                                        <tr class="bg-slate-50 font-bold">
+                                                            <td class="p-4">صافي النقد المتوفر من الأنشطة التمويلية</td>
+                                                            <td class="p-4 text-left text-emerald-600">+{formatCurrency(fin.shortTermLoans + fin.longTermLoans)}</td>
+                                                        </tr>
+
+                                                        <tr class="bg-emerald-600 text-white font-black border-t-4 border-emerald-700 text-base">
+                                                            <td class="p-4">رصيد النقد الفعلي المقدر نهاية الفترة الحالية</td>
+                                                            <td class="p-4 text-left">{formatCurrency(fin.totalCashAndEquivalents)}</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                </div>
+                            )}
+
                             {/* ==================== الواجهة 2: بوابة رفع البيانات والمدقق (Ingestion) ==================== */}
                             {currentView === 'ingestion' && (
                                 <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm space-y-8">
                                     <div class="border-b border-slate-200 pb-6">
-                                        <h3 class="text-lg font-bold text-slate-900">رفع ميزان المراجعة وتحليله تلقائياً</h3>
-                                        <p class="text-sm text-slate-500 mt-1">قم بتنزيل القالب أولاً، أضف بيانات حساباتك وأرصدتها، ثم ارفع الملف هنا ليقوم مدقق النظام الذكي بالتحقق وبناء باقي القوائم تلقائياً.</p>
+                                        <h3 class="text-lg font-bold text-slate-900">استيراد وقراءة ميزان المراجعة</h3>
+                                        <p class="text-sm text-slate-500 mt-1">يرجى تحميل النموذج الفارغ لتعبئة بيانات حساباتك وتفاصيل الأرصدة ومن ثم سحب وإسقاط الملف هنا لربط وقراءة البيانات وتوليد التقارير تلقائياً.</p>
                                     </div>
 
-                                    {/* منطقة سحب وإفلات الملفات التفاعلية */}
+                                    {/* منطقة رفع ملف الإكسل */}
                                     <div class="border-2 border-dashed border-slate-200 hover:border-emerald-500 rounded-2xl p-12 text-center transition-all bg-slate-50 hover:bg-emerald-50/10 cursor-pointer relative">
                                         <input 
                                             type="file" 
@@ -557,30 +1061,30 @@
                                                 <i data-lucide="cloud-upload" class="w-8 h-8"></i>
                                             </div>
                                             <div>
-                                                <p class="font-bold text-slate-800 text-base">اضغط هنا أو اسحب ملف ميزان المراجعة (Excel) الخاص بك</p>
-                                                <p class="text-xs text-slate-400 mt-1">يدعم التنسيقات .xlsx, .xls فقط</p>
+                                                <p class="font-bold text-slate-800 text-base">اضغط هنا لاستعراض أو سحب ملف ميزان المراجعة (Excel)</p>
+                                                <p class="text-xs text-slate-400 mt-1">الملفات المدعومة بصيغ الامتداد .xlsx, .xls فقط</p>
                                             </div>
-                                            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-sm shadow-md transition-all">تصفح الملفات</button>
+                                            <button class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2 rounded-xl text-sm shadow-md transition-all">تصفح ملفات جهازك</button>
                                         </div>
                                     </div>
 
-                                    {/* جدول استعراض حسابات ميزان المراجعة المدقق الحالي */}
+                                    {/* قائمة استعراض السجلات المحاسبية والتحقق من التوازن الحسابي */}
                                     <div class="space-y-4">
                                         <div class="flex justify-between items-center">
                                             <h4 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
                                                 <i data-lucide="check-square" class="text-emerald-500"></i>
-                                                <span>بيانات ميزان المراجعة النشط ({trialBalance.length} حساب مالي)</span>
+                                                <span>الأرصدة المحسوبة في ميزان المراجعة الحالي ({trialBalance.length} حساب مالي)</span>
                                             </h4>
-                                            <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-bold">متزن ومتوافق مع IFRS</span>
+                                            <span class="text-xs bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-1 rounded-full font-bold">متزن ومتوافق مع معايير التقارير الدولية (IFRS)</span>
                                         </div>
 
                                         <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
                                             <table class="w-full text-right border-collapse">
                                                 <thead>
                                                     <tr class="bg-slate-50 text-slate-500 text-xs border-b border-slate-200 font-bold">
-                                                        <th class="p-4">كود الحساب</th>
-                                                        <th class="p-4">اسم الحساب (عربي)</th>
-                                                        <th class="p-4">اسم الحساب (إنجليزي)</th>
+                                                        <th class="p-4 text-right">كود الحساب</th>
+                                                        <th class="p-4 text-right">اسم الحساب (عربي)</th>
+                                                        <th class="p-4 text-right">اسم الحساب (إنجليزي)</th>
                                                         <th class="p-4 text-left">مدين (SAR)</th>
                                                         <th class="p-4 text-left">دائن (SAR)</th>
                                                     </tr>
@@ -606,78 +1110,78 @@
                             {currentView === 'ratios' && (
                                 <div class="space-y-8">
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">تحليل النسب المالية التفصيلي</h3>
+                                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">تحليل النسب والمؤشرات التفصيلية</h3>
                                         
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
-                                            {/* قسم ربحية العمليات */}
+                                            {/* نسب الربحية والأداء الفني */}
                                             <div class="space-y-4">
                                                 <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
                                                     <i data-lucide="trending-up" class="text-emerald-500"></i>
-                                                    <span>نسب الربحية والأداء (Profitability)</span>
+                                                    <span>مؤشرات الربحية والأداء الإجمالي (Profitability)</span>
                                                 </h4>
                                                 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>هامش مجمل الربح:</span>
-                                                        <span class="text-emerald-600">{((fin.grossProfit / fin.sales)*100).toFixed(1)}%</span>
+                                                        <span>هامش مجمل الربح للعمليات:</span>
+                                                        <span class="text-emerald-600">{((fin.grossProfit / fin.netSales)*100).toFixed(1)}%</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">يقيس كفاءة إنتاج بضائعك قبل احتساب المصاريف الإدارية.</p>
+                                                    <p class="text-xs text-slate-500">يقيس كفاءة الإنتاج والتصنيع المباشر للبضائع قبل خصم الأعباء والالتزامات الإدارية.</p>
                                                 </div>
 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>هامش صافي الأرباح:</span>
-                                                        <span class="text-emerald-600">{((fin.netIncome / fin.sales)*100).toFixed(1)}%</span>
+                                                        <span>هامش صافي الأرباح النهائية:</span>
+                                                        <span class="text-emerald-600">{((fin.netIncome / fin.netSales)*100).toFixed(1)}%</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">عائد الربح النهائي الصافي المتاح للمستثمرين بعد جميع التكاليف والفوائد.</p>
+                                                    <p class="text-xs text-slate-500">يقيس نسبة الأرباح الصافية المتبقية لصالح المستثمرين والشركاء بعد تصفية جميع المصاريف والأعباء.</p>
                                                 </div>
                                             </div>
 
-                                            {/* قسم الكفاءة التشغيلية ورأس المال العامل */}
+                                            {/* مؤشرات الكفاءة والنشاط التشغيلي */}
                                             <div class="space-y-4">
                                                 <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
                                                     <i data-lucide="refresh-cw" class="text-blue-500"></i>
-                                                    <span>مؤشرات النشاط والكفاءة (Efficiency)</span>
+                                                    <span>مؤشرات النشاط ودوران رأس المال (Efficiency)</span>
                                                 </h4>
                                                 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>فترة تحصيل ديون العملاء (DSO):</span>
+                                                        <span>متوسط فترة تحصيل العملاء (DSO):</span>
                                                         <span class="text-amber-600">{fin.dso} يوم</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">المدة التي تستغرقها لتحصيل أموالك من السوق بعد البيع الآجل.</p>
+                                                    <p class="text-xs text-slate-500">الفترة الزمنية التي تحتاجها المنشأة لاسترداد مبيعاتها الآجلة من السوق النقدي.</p>
                                                 </div>
 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>فترة سداد الموردين (DPO):</span>
+                                                        <span>متوسط فترة سداد الموردين (DPO):</span>
                                                         <span class="text-emerald-600">{fin.dpo} يوم</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">المدة التي تأخذها لتسديد ديون مورديك.</p>
+                                                    <p class="text-xs text-slate-500">الفترة المستغرقة التي يتم استغلالها لتسوية وسداد المستحقات والالتزامات مع الموردين.</p>
                                                 </div>
                                             </div>
 
-                                            {/* قسم السيولة والمخاطر الهيكلية */}
+                                            {/* مؤشرات الرافعة المالية والتمويل */}
                                             <div class="space-y-4">
                                                 <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
                                                     <i data-lucide="shield" class="text-purple-500"></i>
-                                                    <span>الرافعة المالية والديون (Leverage)</span>
+                                                    <span>تحليل الهيكلية والرافعة المالية (Leverage)</span>
                                                 </h4>
                                                 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>نسبة الالتزامات إلى حقوق الملكية:</span>
+                                                        <span>نسبة الالتزامات إلى حقوق الشركاء:</span>
                                                         <span class="text-slate-800">{fin.debtToEquity}%</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">توضح مدى اعتمادك على التمويل الخارجي مقارنة بأموال الشركاء.</p>
+                                                    <p class="text-xs text-slate-500">مدى اعتماد المنشأة على التسهيلات الائتمانية والتمويل الخارجي مقارنة بأموال وحقوق الملاك.</p>
                                                 </div>
 
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                                                     <div class="flex justify-between text-xs font-bold">
-                                                        <span>دورة التحول النقدي (CCC):</span>
+                                                        <span>دورة التحويل النقدي المجمعة (CCC):</span>
                                                         <span class="text-slate-800">{fin.ccc} يوم</span>
                                                     </div>
-                                                    <p class="text-xs text-slate-500">الوقت المستغرق من دفع كاش للمورد حتى استلام كاش من العميل.</p>
+                                                    <p class="text-xs text-slate-500">الفترة الزمنية الفاصلة بين تدفق الكاش لشراء المواد الأولية وتحصيل الكاش المقابل من العملاء.</p>
                                                 </div>
                                             </div>
                                         </div>
@@ -691,70 +1195,180 @@
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                                         <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4 flex items-center space-x-2 space-x-reverse">
                                             <i data-lucide="shield-alert" class="text-rose-500"></i>
-                                            <span>رادار مخاطر التشغيل والسيولة والربحية</span>
+                                            <span>رادار تقييم المخاطر وتنبيهات الأداء التشغيلي والسيولة</span>
                                         </h3>
 
                                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            {/* تنبيه مخاطر العملاء والذمم المدينة */}
+                                            {/* مخاطر التحصيل وبطء النقدية */}
                                             <div class="border border-slate-200 rounded-xl p-6 space-y-4 hover:border-rose-200 hover:bg-rose-50/5 transition-all">
                                                 <div class="flex justify-between items-start">
                                                     <div class="bg-rose-100 text-rose-600 p-3 rounded-xl">
                                                         <i data-lucide="users" class="w-6 h-6"></i>
                                                     </div>
-                                                    <span class="text-xs bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold">مستوى خطر متوسط</span>
+                                                    <span class="text-xs bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold">مستوى مراقبة مستمر</span>
                                                 </div>
-                                                <h4 class="font-bold text-slate-900">مخاطر بطء التحصيل من العملاء (DSO)</h4>
-                                                <p class="text-xs text-slate-500 leading-relaxed">تستغرق فترة التحصيل {fin.dso} يوماً وهي مرتفعة مقارنة بمتوسط القطاع (30 يوماً). يوصى بتقديم خصومات تعجيل الدفع بنسبة 1% للعملاء الملتزمين بالسداد السريع لتعجيل دورة النقد.</p>
+                                                <h4 class="font-bold text-slate-900">مخاطر بطء معدلات تحصيل النقد من العملاء (DSO)</h4>
+                                                <p class="text-xs text-slate-500 leading-relaxed">تستغرق فترة التحصيل المحققة {fin.dso} يوماً، وهي فترة تزيد بشكل نسبي عن متوسط السوق المستهدف. يوصى بمراجعة سياسات البيع الآجل الممنوحة وتفعيل خطط حث العملاء على السداد المعجل عبر خصومات السداد الفوري لتحسين تدفق النقد السريع.</p>
                                             </div>
 
-                                            {/* تنبيه فجوة السيولة (Cash Conversion Cycle) */}
+                                            {/* فجوات السيولة والتمويل الذاتي */}
                                             <div class="border border-slate-200 rounded-xl p-6 space-y-4 hover:border-amber-200 hover:bg-amber-50/5 transition-all">
                                                 <div class="flex justify-between items-start">
                                                     <div class="bg-amber-100 text-amber-600 p-3 rounded-xl">
                                                         <i data-lucide="alert-circle" class="w-6 h-6"></i>
                                                     </div>
-                                                    <span class="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold">تنبيه ومراقبة</span>
+                                                    <span class="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold">ملاحظات وقائية</span>
                                                 </div>
-                                                <h4 class="font-bold text-slate-900">دورة النقدية ومخاطر رأس المال</h4>
-                                                <p class="text-xs text-slate-500 leading-relaxed">دورة تحويل النقدية تبلغ {fin.ccc} يوماً. هذا يعني أن نقدية الشركة تظل محبوسة ومقيدة في العمليات التشغيلية طوال هذه الفترة. يُنصح بإعادة التفاوض مع الموردين لزيادة مدة السداد لتقليص فجوة التمويل.</p>
+                                                <h4 class="font-bold text-slate-900">فجوة التحويل النقدي ودورة رأس المال المستغل</h4>
+                                                <p class="text-xs text-slate-500 leading-relaxed">تقدر دورة تدوير النقدية بـ {fin.ccc} يوماً. تشير هذه القراءة إلى احتجاز جزء من النقدية المتاحة في الدورة التشغيلية لفترة أطول. يُنصح بالتوجه للتفاوض مع كبار الموردين لزيادة حدود وتسهيلات الدفع لتقليل فجوة الاحتياج النقدي الدوري.</p>
+                                            </div>
+
+                                            {/* خطر تركّز العملاء */}
+                                            <div class="border border-slate-200 rounded-xl p-6 space-y-4 hover:border-amber-200 hover:bg-amber-50/5 transition-all">
+                                                <div class="flex justify-between items-start">
+                                                    <div class="bg-amber-100 text-amber-600 p-3 rounded-xl">
+                                                        <i data-lucide="layers" class="w-6 h-6"></i>
+                                                    </div>
+                                                    <span class="text-xs bg-amber-100 text-amber-800 px-3 py-1 rounded-full font-bold">توصية احترازية</span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-900">تحليل تركز مخاطر العملاء والائتمان</h4>
+                                                <p class="text-xs text-slate-500 leading-relaxed">يجب تنويع محفظة العملاء لضمان ألا تتركز المبيعات بنسبة تزيد عن 20% لدى عميل منفرد. مخصص الخسائر الائتمانية المتوقعة البالغ <strong class="text-slate-800">{formatCurrency(fin.eclAllowance)}</strong> يغطي المخاطر الحالية بكفاءة.</p>
+                                            </div>
+
+                                            {/* خطر انخفاض الهامش التشغيلي */}
+                                            <div class="border border-slate-200 rounded-xl p-6 space-y-4 hover:border-rose-200 hover:bg-rose-50/5 transition-all">
+                                                <div class="flex justify-between items-start">
+                                                    <div class="bg-rose-100 text-rose-600 p-3 rounded-xl">
+                                                        <i data-lucide="trending-down" class="w-6 h-6"></i>
+                                                    </div>
+                                                    <span class="text-xs bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold">هام جداً</span>
+                                                </div>
+                                                <h4 class="font-bold text-slate-900">مراقبة هوامش الأرباح وتكاليف السلع (COGS)</h4>
+                                                <p class="text-xs text-slate-500 leading-relaxed">تكلفة المبيعات الحالية تمثل <strong class="text-slate-800">{((fin.totalCogs/fin.netSales)*100).toFixed(1)}%</strong> من إجمالي مبيعاتك. أي ارتفاع غير محسوب في أسعار المواد الخام بقيمة <strong class="text-slate-800">{formatCurrency(fin.cogsMaterials)}</strong> سيؤثر بشكل مباشر ومباشر على صافي الربح النهائي.</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             )}
 
-                            {/* ==================== الواجهة 5: التنبؤ والتخطيط (Forecasting) ==================== */}
+                            {/* ==================== الواجهة 5: التنبؤ والتخطيط والسيناريوهات (Forecasting) ==================== */}
                             {currentView === 'forecasting' && (
-                                <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
-                                    <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">توقعات التدفقات النقدية ومسار الإيرادات المستقبلية</h3>
-                                    
-                                    <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
-                                        <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
-                                            <i data-lucide="sparkles" class="text-emerald-500 animate-pulse"></i>
-                                            <span>التحليل التنبؤي الذكي (أشهر المستقبل)</span>
-                                        </h4>
-                                        <p class="text-xs text-slate-500 leading-relaxed">بناءً على نمو مبيعاتك التاريخي، والمصروفات الثابتة المستخرجة من ميزان المراجعة، إليك خطة التدفق النقدي والمبيعات المتوقعة للـ 3 أشهر القادمة:</p>
+                                <div class="space-y-8">
+                                    {/* لوحة السيناريوهات التفاعلية (ماذا لو؟) */}
+                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                                        <div class="border-b border-slate-100 pb-4">
+                                            <h3 class="text-lg font-bold text-slate-900">محاكي السيناريوهات المالية التفاعلي (What-If Analysis)</h3>
+                                            <p class="text-xs text-slate-500 mt-1">قم بتعديل مؤشرات المبيعات ونسب التكلفة والمصاريف لملاحظة النتيجة التقديرية التلقائية لصافي الربح المتوقع فوراً.</p>
+                                        </div>
 
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                            {/* توقعات الشهر 1 */}
-                                            <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                                                <span class="text-xs text-slate-400 font-bold">مبيعات الشهر القادم المتوقعة (+5%):</span>
-                                                <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.sales * 1.05)}</h4>
-                                                <p class="text-[10px] text-slate-400">حجم النقد المتوقع توفره في الحسابات: {formatCurrency(fin.cash + (fin.sales * 0.05))}</p>
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                            
+                                            {/* محدد نمو المبيعات */}
+                                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <div class="flex justify-between text-xs font-bold">
+                                                    <span class="text-slate-700">تغير حجم المبيعات المتوقع:</span>
+                                                    <span class="text-emerald-600 font-mono">{simSalesGrowth > 0 ? `+${simSalesGrowth}` : simSalesGrowth}%</span>
+                                                </div>
+                                                <input 
+                                                    type="range" 
+                                                    min="-30" 
+                                                    max="50" 
+                                                    value={simSalesGrowth}
+                                                    onChange={(e) => setSimSalesGrowth(parseInt(e.target.value))}
+                                                    class="w-full accent-emerald-500 cursor-pointer"
+                                                />
+                                                <p class="text-[10px] text-slate-400">تعديل توقعات زيادة أو انخفاض مستويات مبيعات الفترة الحالية.</p>
                                             </div>
 
-                                            {/* توقعات الشهر 2 */}
-                                            <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                                                <span class="text-xs text-slate-400 font-bold">مبيعات الشهر الثاني المتوقعة (+10%):</span>
-                                                <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.sales * 1.10)}</h4>
-                                                <p class="text-[10px] text-slate-400">حجم النقد المتوقع توفره في الحسابات: {formatCurrency(fin.cash + (fin.sales * 0.10))}</p>
+                                            {/* محدد نسبة تكلفة البضاعة المباعة */}
+                                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <div class="flex justify-between text-xs font-bold">
+                                                    <span class="text-slate-700">نسبة تكلفة المبيعات من الإيراد:</span>
+                                                    <span class="text-blue-600 font-mono">{simCogsRatio}%</span>
+                                                </div>
+                                                <input 
+                                                    type="range" 
+                                                    min="25" 
+                                                    max="65" 
+                                                    value={simCogsRatio}
+                                                    onChange={(e) => setSimCogsRatio(parseInt(e.target.value))}
+                                                    class="w-full accent-blue-500 cursor-pointer"
+                                                />
+                                                <p class="text-[10px] text-slate-400">مراقبة تأثر الربح في حال زيادة أو انخفاض مدخلات التصنيع والمواد.</p>
                                             </div>
 
-                                            {/* توقعات الشهر 3 */}
-                                            <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
-                                                <span class="text-xs text-slate-400 font-bold">مبيعات الشهر الثالث المتوقعة (+15%):</span>
-                                                <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.sales * 1.15)}</h4>
-                                                <p class="text-[10px] text-slate-400">حجم النقد المتوقع توفره في الحسابات: {formatCurrency(fin.cash + (fin.sales * 0.15))}</p>
+                                            {/* محدد نسبة المصاريف الإدارية */}
+                                            <div class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                                                <div class="flex justify-between text-xs font-bold">
+                                                    <span class="text-slate-700">نسبة المصاريف الإدارية والعمومية:</span>
+                                                    <span class="text-purple-600 font-mono">{simOpexRatio}%</span>
+                                                </div>
+                                                <input 
+                                                    type="range" 
+                                                    min="10" 
+                                                    max="35" 
+                                                    value={simOpexRatio}
+                                                    onChange={(e) => setSimOpexRatio(parseInt(e.target.value))}
+                                                    class="w-full accent-purple-500 cursor-pointer"
+                                                />
+                                                <p class="text-[10px] text-slate-400">التحكم في مستويات المصاريف والتشغيل والتسويق والإيجارات المقدرة.</p>
+                                            </div>
+
+                                        </div>
+
+                                        {/* بطاقات مقارنة النتائج الفورية للسيناريو */}
+                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 pt-4 border-t border-slate-100">
+                                            <div class="bg-slate-900 text-white p-4 rounded-xl">
+                                                <span class="text-[10px] text-slate-400 font-bold block mb-1">المبيعات المقدرة بالسيناريو:</span>
+                                                <span class="text-lg font-extrabold">{formatCurrency(simulatedSales)}</span>
+                                            </div>
+                                            <div class="bg-slate-900 text-white p-4 rounded-xl">
+                                                <span class="text-[10px] text-slate-400 font-bold block mb-1">تكلفة المبيعات المقدرة بالسيناريو:</span>
+                                                <span class="text-lg font-extrabold text-slate-300">{formatCurrency(simulatedCogs)}</span>
+                                            </div>
+                                            <div class="bg-slate-900 text-white p-4 rounded-xl">
+                                                <span class="text-[10px] text-slate-400 font-bold block mb-1">المصاريف التشغيلية المقدرة بالسيناريو:</span>
+                                                <span class="text-lg font-extrabold text-slate-300">{formatCurrency(simulatedOpex)}</span>
+                                            </div>
+                                            <div class="bg-emerald-600 text-white p-4 rounded-xl shadow-md">
+                                                <span class="text-[10px] text-emerald-200 font-bold block mb-1">صافي الربح التقديري المالي:</span>
+                                                <span class="text-lg font-black">{formatCurrency(simulatedNetIncome)}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* جدول تقدير التدفقات التاريخية */}
+                                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                                        <h3 class="text-lg font-bold text-slate-900 border-b border-slate-100 pb-4">مخطط الموازنة التقديرية المستقبلية للثلاثة أشهر المقبلة</h3>
+                                        
+                                        <div class="bg-slate-50 p-6 rounded-2xl border border-slate-200 space-y-6">
+                                            <h4 class="font-bold text-slate-800 flex items-center space-x-2 space-x-reverse text-sm">
+                                                <i data-lucide="calendar" class="text-emerald-500"></i>
+                                                <span>تقديرات أداء الفترات التشغيلية المقبلة</span>
+                                            </h4>
+                                            <p class="text-xs text-slate-500 leading-relaxed">استناداً إلى الاتجاه التاريخي للأرباح والمبيعات ومستويات التكلفة الثابتة والمصروفات المستخلصة من ميزان المراجعة، يوضح الجدول التالي المبيعات والسيولة النقدية المتوقعة للثلاثة أشهر المقبلة:</p>
+
+                                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                                {/* الشهر 1 */}
+                                                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                                                    <span class="text-xs text-slate-400 font-bold">توقعات الشهر الأول القادم (+5%):</span>
+                                                    <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.netSales * 1.05)}</h4>
+                                                    <p class="text-[10px] text-slate-400">الرصيد النقدي التقديري المتوفر بالحسابات: {formatCurrency(fin.totalCashAndEquivalents + (fin.netSales * 0.05))}</p>
+                                                </div>
+
+                                                {/* الشهر 2 */}
+                                                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                                                    <span class="text-xs text-slate-400 font-bold">توقعات الشهر الثاني القادم (+10%):</span>
+                                                    <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.netSales * 1.10)}</h4>
+                                                    <p class="text-[10px] text-slate-400">الرصيد النقدي التقديري المتوفر بالحسابات: {formatCurrency(fin.totalCashAndEquivalents + (fin.netSales * 0.10))}</p>
+                                                </div>
+
+                                                {/* الشهر 3 */}
+                                                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2">
+                                                    <span class="text-xs text-slate-400 font-bold">توقعات الشهر الثالث القادم (+15%):</span>
+                                                    <h4 class="text-xl font-extrabold text-slate-900">{formatCurrency(fin.netSales * 1.15)}</h4>
+                                                    <p class="text-[10px] text-slate-400">الرصيد النقدي التقديري المتوفر بالحسابات: {formatCurrency(fin.totalCashAndEquivalents + (fin.netSales * 0.15))}</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -765,7 +1379,7 @@
 
                         {/* تذييل الصفحة (Footer) */}
                         <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 mt-auto">
-                            <p>© 2026 فينتيك برو - جميع الحقوق محفوظة لشركتك المالية المتقدمة</p>
+                            <p>© 2026 المنصة المالية المتكاملة للتحليل المالي - جميع الحقوق محفوظة</p>
                         </footer>
                     </main>
 
