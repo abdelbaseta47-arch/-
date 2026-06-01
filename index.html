@@ -208,7 +208,7 @@
 
         function App() {
             // إدارة الصفحات والواجهات النشطة
-            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, statements, ingestion, ratios, risk, forecasting
+            const [currentView, setCurrentView] = useState('dashboard'); // dashboard, statements, ingestion, ratios, risk, forecasting, receivables, payables, cash-deep-dive, leverage-debt
             const [activeStatementTab, setActiveStatementTab] = useState('income'); // income, balance, cashflow
             // إدارة ميزان المراجعة النشط في النظام
             const [trialBalance, setTrialBalance] = useState(defaultTrialBalance);
@@ -372,6 +372,11 @@
                 const dpo = totalCogs > 0 ? Math.round((payables / totalCogs) * 365) : 0; 
                 const ccc = (dso + dio) - dpo; 
 
+                // حساب معدلات المديونية والتمويل المتقدمة
+                const debtToAssets = totalAssets > 0 ? ((totalLiabilities / totalAssets) * 100).toFixed(1) : "N/A";
+                const interestCoverage = financeCosts > 0 ? (operatingProfit / financeCosts).toFixed(2) : "N/A";
+                const cashRunwayMonths = (totalOpex + financeCosts) > 0 ? (totalCashAndEquivalents / ((totalOpex + financeCosts) / 3)).toFixed(1) : "N/A";
+
                 return {
                     totalCashAndEquivalents, netReceivables, totalInventory, totalCurrentAssets,
                     netFixedAssets, totalNonCurrentAssets, totalAssets,
@@ -379,7 +384,7 @@
                     baseEquity, totalEquity,
                     netSales, totalCogs, grossProfit, totalOpex, operatingProfit, netIncomeBeforeZakat, netIncome,
                     currentRatio, quickRatio, debtToEquity, returnOnEquity, returnOnAssets, workingCapital,
-                    dso, dio, dpo, ccc,
+                    dso, dio, dpo, ccc, debtToAssets, interestCoverage, cashRunwayMonths,
                     cash, bank, stInvestments, receivables, eclAllowance, rawMaterials, wip, finishedGoods, prepaids, dueFromRelated,
                     lands, buildings, machinery, accumDepr, intangibleAssets, payables, accruedExp, customerAdvances,
                     shortTermLoans, dueToRelated, zakatProvision, longTermLoans, endOfServiceProvision, capital, statutoryReserve, retainedEarnings,
@@ -517,7 +522,7 @@
                     
                     {/* 1. القائمة الجانبية (Sidebar) */}
                     <aside class="w-80 bg-slate-900 text-white flex flex-col justify-between shadow-xl transition-all duration-300">
-                        <div>
+                        <div class="overflow-y-auto max-h-[85vh] scrollbar-thin">
                             {/* الشعار والهوية البصرية الاحترافية */}
                             <div class="p-6 border-b border-slate-800 flex items-center space-x-3 space-x-reverse">
                                 <div class="bg-emerald-500 text-slate-900 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
@@ -565,7 +570,41 @@
                                     <span>مركز النسب المالية والتحليل المقارن</span>
                                 </button>
 
-                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-6 uppercase tracking-wider mb-2">أدوات التخطيط والمخاطر</p>
+                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-4 uppercase tracking-wider mb-2">إدارة رأس المال العامل والمديونية</p>
+
+                                <button 
+                                    onClick={() => setCurrentView('receivables')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'receivables' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="users" class="w-5 h-5"></i>
+                                    <span>تحليل العملاء والذمم المدينة</span>
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('payables')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'payables' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="truck" class="w-5 h-5"></i>
+                                    <span>تحليل الموردين والذمم الدائنة</span>
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('cash-deep-dive')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'cash-deep-dive' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="wallet" class="w-5 h-5"></i>
+                                    <span>تحليل وإدارة النقدية والسيولة</span>
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('leverage-debt')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'leverage-debt' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="shield" class="w-5 h-5"></i>
+                                    <span>تحليل المديونية والرافعة المالية</span>
+                                </button>
+
+                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-4 uppercase tracking-wider mb-2">أدوات التخطيط والمخاطر</p>
 
                                 <button 
                                     onClick={() => setCurrentView('risk')}
@@ -609,6 +648,10 @@
                                     {currentView === 'statements' && "مركز إعداد القوائم المالية المستخلصة (IFRS)"}
                                     {currentView === 'ingestion' && "بوابة التحميل والتدقيق المحاسبي لميزان المراجعة"}
                                     {currentView === 'ratios' && "مركز دراسة وتحليل النسب والمؤشرات المالية"}
+                                    {currentView === 'receivables' && "لوحة تحليل العملاء والذمم المدينة"}
+                                    {currentView === 'payables' && "لوحة تحليل الموردين والذمم الدائنة"}
+                                    {currentView === 'cash-deep-dive' && "لوحة تحليل النقدية وإدارة السيولة التشغيلية"}
+                                    {currentView === 'leverage-debt' && "لوحة دراسة المديونية والتمويل والرافعة المالية"}
                                     {currentView === 'risk' && "كشف التقييم المالي والوقاية من مخاطر التشغيل"}
                                     {currentView === 'forecasting' && "لوحة محاكاة التقديرات والتدفقات النقدية المتوقعة"}
                                 </h2>
@@ -652,7 +695,7 @@
                                 <div class="space-y-1">
                                     <h4 class="font-bold text-emerald-950 text-xs">تحليل ديناميكي حركي نشط للفترة ({selectedPeriod}):</h4>
                                     <p class="text-xs text-emerald-800 leading-relaxed">
-                                        تتفاعل جميع القوائم والنسب المالية المدرجة في المنصة ديناميكياً عند اختيارك أي فترة زمنية مختلفة من القائمة المنسدلة في الأعلى. يرجى تجربة التبديل لمعاينة التغير التلقائي في المبيعات، ومجمل الأرباح وتوزيع السيولة وهيكل التدفق النقدي.
+                                        تتفاعل جميع القوائم والنسب المالية والتحليلات الخاصة برأس المال العامل والمديونية والعملاء تلقائياً عند تغيير الفترة من الشريط العلوي. يتم ربط فجوة التحصيل وفترات السداد ونسب الرافعة المالية لتقديم رؤية متكاملة لمديري الحسابات والمستثمرين.
                                     </p>
                                 </div>
                             </div>
@@ -807,7 +850,7 @@
 
                                     </div>
                                     
-                                    {/* قسم جديد بالكامل: التوصيات الاستراتيجية المخصصة للمستثمر */}
+                                    {/* قسم التوصيات الاستراتيجية المخصصة للمستثمر */}
                                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
                                         <div class="flex justify-between items-center border-b border-slate-100 pb-4">
                                             <h3 class="font-bold text-slate-900 flex items-center space-x-2 space-x-reverse">
@@ -1325,6 +1368,343 @@
                                                     </div>
                                                     <p class="text-xs text-slate-500">الفترة الزمنية الفاصلة بين تدفق الكاش لشراء المواد الأولية وتحصيل الكاش المقابل من العملاء.</p>
                                                 </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ==================== الواجهة الجديدة: تحليل العملاء والذمم المدينة (Receivables) ==================== */}
+                            {}
+                            {currentView === 'receivables' && (
+                                <div class="space-y-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي ذمم العملاء</span>
+                                            <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.receivables)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">مجموع الأرصدة المستحقة على عملاء الأجل</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">مخصص ديون مشكوك فيها (ECL)</span>
+                                            <h3 class="text-2xl font-black text-rose-600">{formatCurrency(fin.eclAllowance)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">تغطية جيدة للديون المحتمل تعثرها</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">فترة تحصيل ديون العملاء (DSO)</span>
+                                            <h3 class="text-2xl font-black text-emerald-600">{fin.dso} يوم</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">معدل سرعة تدوير المبيعات الآجلة لكاش</p>
+                                        </div>
+                                    </div>
+
+                                    {/* جدول أعمار الديون والمخاطر */}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="clock" class="text-emerald-500"></i>
+                                                <span>جدول أعمار الديون التقديري (Aging Schedule)</span>
+                                            </h4>
+                                            
+                                            <div class="space-y-4 pt-2">
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>ديون جارية (أقل من 30 يوم) - 60%</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.60)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-emerald-500 h-full" style={{ width: '60%' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>مستحقة (31 - 60 يوم) - 25%</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.25)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-blue-500 h-full" style={{ width: '25%' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>متأخرة السداد (61 - 90 يوم) - 10%</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.10)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-amber-500 h-full" style={{ width: '10%' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1 text-rose-600 font-bold">
+                                                        <span>عالية المخاطر (+90 يوم) - 5%</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.05)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-rose-500 h-full" style={{ width: '5%' }}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="shield-alert" class="text-rose-500"></i>
+                                                <span>تحليل تركز الائتمان ومخاطر كبار العملاء</span>
+                                            </h4>
+                                            
+                                            <div class="space-y-4">
+                                                <div class="p-3 bg-amber-50 rounded-xl border border-amber-200 flex items-center space-x-3 space-x-reverse text-amber-800">
+                                                    <i data-lucide="alert-triangle" class="w-5 h-5 flex-shrink-0"></i>
+                                                    <p class="text-xs">تنبيه ائتماني: يمثل كبار العملاء 3 شركات حوالي <strong class="text-amber-950">42%</strong> من إجمالي مبيعات الفترة. أي تعثر لأحدهم يضغط بشكل حرج على سيولة رأس المال العامل.</p>
+                                                </div>
+
+                                                <div class="border border-slate-100 rounded-xl overflow-hidden text-xs">
+                                                    <div class="grid grid-cols-3 bg-slate-50 p-2 font-bold text-slate-600">
+                                                        <span>العميل</span>
+                                                        <span>الرصيد التقديري</span>
+                                                        <span>نسبة التركز</span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 p-2 border-t border-slate-100">
+                                                        <span>مجموعة العبيد للمقاولات</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.24)}</span>
+                                                        <span class="text-rose-600 font-bold">24% (مخاطر تركز)</span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 p-2 border-t border-slate-100">
+                                                        <span>شركة الرياض للتجارة</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.18)}</span>
+                                                        <span>18% (آمن)</span>
+                                                    </div>
+                                                    <div class="grid grid-cols-3 p-2 border-t border-slate-100">
+                                                        <span>عملاء آخرين متفرقين</span>
+                                                        <span>{formatCurrency(fin.receivables * 0.58)}</span>
+                                                        <span>58%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ==================== الواجهة الجديدة: تحليل الموردين والذمم الدائنة (Payables) ==================== */}
+                            {}
+                            {currentView === 'payables' && (
+                                <div class="space-y-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">التزامات الموردين</span>
+                                            <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.payables)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">مستحقات واجبة السداد لكبار الموردين والمقاولين</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">دورة سداد الموردين (DPO)</span>
+                                            <h3 class="text-2xl font-black text-blue-600">{fin.dpo} يوم</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">فترة الأيام التي تستغرقها المنشأة لسداد التزاماتها</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">رصيد المشتريات الآجلة المتبقي</span>
+                                            <h3 class="text-2xl font-black text-emerald-600">{formatCurrency(fin.totalCogs)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">إجمالي تكلفة المبيعات الداعمة للتشغيل</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        {/* سداد الموردين والسياسة الائتمانية */}
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="file-check" class="text-emerald-500"></i>
+                                                <span>توزيع استحقاق التزامات الموردين</span>
+                                            </h4>
+                                            
+                                            <div class="space-y-4 pt-2">
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>التزامات مستحقة حالاً (خلال 15 يوم) - 70%</span>
+                                                        <span>{formatCurrency(fin.payables * 0.70)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-rose-500 h-full" style={{ width: '70%' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>التزامات جارية (16 - 30 يوم) - 20%</span>
+                                                        <span>{formatCurrency(fin.payables * 0.20)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-emerald-500 h-full" style={{ width: '20%' }}></div>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div class="flex justify-between text-xs font-semibold mb-1">
+                                                        <span>آجلة (أكثر من 30 يوم) - 10%</span>
+                                                        <span>{formatCurrency(fin.payables * 0.10)}</span>
+                                                    </div>
+                                                    <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                                        <div class="bg-blue-500 h-full" style={{ width: '10%' }}></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* توصيات ومفاوضات الموردين */}
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="help-circle" class="text-emerald-500"></i>
+                                                <span>أثر السياسة التمويلية مع الموردين</span>
+                                            </h4>
+                                            <div class="text-xs text-slate-600 leading-relaxed space-y-3">
+                                                <p>
+                                                    فترة سداد الموردين تبلغ <strong class="text-slate-950">{fin.dpo} يوماً</strong>، مقارنة بـ <strong class="text-slate-950">{fin.dso} يوماً</strong> لفترة تحصيل مستحقات العملاء. 
+                                                </p>
+                                                {fin.dpo < fin.dso ? (
+                                                    <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-900 space-y-1">
+                                                        <h5 class="font-bold">تحذير الفجوة التشغيلية:</h5>
+                                                        <p>أنت تقوم بسداد التزامات الموردين أسرع مما تقوم بتحصيل نقد العملاء. هذا يضع عبئاً ضخماً على النقدية المتاحة بالشركة ويخلق فجوة سيولة تمويلية مستمرة.</p>
+                                                    </div>
+                                                ) : (
+                                                    <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 space-y-1">
+                                                        <h5 class="font-bold">موقف تمويلي إيجابي:</h5>
+                                                        <p>دورة السداد للموردين أبطأ من دورة التحصيل للعملاء. هذا يمنح الشركة إمكانية تمويل رأس المال العامل ذاتياً من التدفقات الجارية دون الحاجة للاقتراض الخارجي.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ==================== الواجهة الجديدة: تحليل النقدية وإدارة السيولة (Cash Management) ==================== */}
+                            {}
+                            {currentView === 'cash-deep-dive' && (
+                                <div class="space-y-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الكاش المتاح</span>
+                                            <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.totalCashAndEquivalents)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">النقدية بالصناديق والجروبات الاستثمارية السريعة</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">معدل الصرف الشهري المقدر</span>
+                                            <h3 class="text-2xl font-black text-rose-600">{formatCurrency((fin.totalOpex + fin.financeCosts) / 3)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">متوسط النزيف المالي الشهري للمصروفات</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">أشهر التغطية النقدية (Runway)</span>
+                                            <h3 class="text-2xl font-black text-emerald-600">{fin.cashRunwayMonths} شهر</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">مدة صمود الكاش بدون تحقيق أي مبيعات جديدة</p>
+                                        </div>
+                                    </div>
+
+                                    {/* توزيع النقدية والتدفقات */}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="wallet" class="text-emerald-500"></i>
+                                                <span>هيكل وتوزيع المحفظة النقدية</span>
+                                            </h4>
+                                            
+                                            <div class="space-y-4 pt-2">
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                                                    <div>
+                                                        <h5 class="text-xs font-bold text-slate-900">النقدية الجارية بالصندوق والخزينة</h5>
+                                                        <span class="text-[10px] text-slate-400">سيولة شديدة السرعة للمصاريف اليومية</span>
+                                                    </div>
+                                                    <span class="font-bold text-slate-700 text-sm">{formatCurrency(fin.cash)}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                                                    <div>
+                                                        <h5 class="text-xs font-bold text-slate-900">الحسابات الجارية بالبنوك</h5>
+                                                        <span class="text-[10px] text-slate-400">سيولة بنكية للعمليات الرئيسية وسداد الموردين</span>
+                                                    </div>
+                                                    <span class="font-bold text-slate-700 text-sm">{formatCurrency(fin.bank)}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                                                    <div>
+                                                        <h5 class="text-xs font-bold text-slate-900">الاستثمارات المالية قصيرة الأجل</h5>
+                                                        <span class="text-[10px] text-slate-400">صناديق الاستثمار بالقيم العادلة لزيادة كفاءة الكاش الفائض</span>
+                                                    </div>
+                                                    <span class="font-bold text-slate-700 text-sm">{formatCurrency(fin.stInvestments)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="droplet" class="text-blue-500"></i>
+                                                <span>رؤية كفاءة التدفق النقدي والسيولة</span>
+                                            </h4>
+                                            <div class="text-xs text-slate-600 leading-relaxed space-y-3">
+                                                <p>أرصدة النقدية وما في حكمها الإجمالية البالغة <strong class="text-slate-950">{formatCurrency(fin.totalCashAndEquivalents)}</strong> تضع الشركة في موقف مالي آمن مع قدرة سداد سريعة.</p>
+                                                <p>تتمتع الشركة بفترة حماية أو تغطية نقدية تبلغ <strong class="text-emerald-600 font-bold">{fin.cashRunwayMonths} أشهر</strong>، وهذا يمنح الإدارة المالية متسعاً للتوسع، الاستثمار أو الصمود في حالات التباطؤ الاقتصادي الموسمي المؤقت دون خطر العسر المالي.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ==================== الواجهة الجديدة: تحليل المديونية والرافعة المالية (Leverage & Debt) ==================== */}
+                            {currentView === 'leverage-debt' && (
+                                <div class="space-y-8">
+                                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">إجمالي الديون التمويلية</span>
+                                            <h3 class="text-2xl font-black text-slate-900">{formatCurrency(fin.shortTermLoans + fin.longTermLoans)}</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">مجموع القروض قصيرة وطويلة الأجل</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">نسبة الدين إلى الأصول</span>
+                                            <h3 class="text-2xl font-black text-slate-900">{fin.debtToAssets}%</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">نسبة تمويل أصول الشركة من الديون</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">نسبة الالتزامات إلى حقوق الملكية</span>
+                                            <h3 class="text-2xl font-black text-blue-600">{fin.debtToEquity}%</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">مستوى الرافعة المالية وهيكل التمويل</p>
+                                        </div>
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                                            <span class="text-xs text-slate-400 font-bold block mb-1">معدل تغطية الفوائد (X)</span>
+                                            <h3 class="text-2xl font-black text-emerald-600">{fin.interestCoverage}x</h3>
+                                            <p class="text-[11px] text-slate-500 mt-2">قدرة الأرباح التشغيلية على تغطية أعباء الفوائد</p>
+                                        </div>
+                                    </div>
+
+                                    {/* تفاصيل الملاءة والقروض */}
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="database" class="text-purple-500"></i>
+                                                <span>تفاصيل الالتزامات والقروض التمويلية</span>
+                                            </h4>
+                                            
+                                            <div class="space-y-4 pt-2">
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                                                    <div>
+                                                        <h5 class="text-xs font-bold text-slate-900">تسهيلات بنكية وقروض قصيرة الأجل</h5>
+                                                        <span class="text-[10px] text-slate-400">تسهيلات مستحقة خلال 12 شهراً لتمويل النقدية</span>
+                                                    </div>
+                                                    <span class="font-bold text-rose-600 text-sm">{formatCurrency(fin.shortTermLoans)}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl">
+                                                    <div>
+                                                        <h5 class="text-xs font-bold text-slate-900">قروض والتزامات طويلة الأجل</h5>
+                                                        <span class="text-[10px] text-slate-400">قروض بنكية طويلة لتمويل الأصول والمعدات</span>
+                                                    </div>
+                                                    <span class="font-bold text-slate-700 text-sm">{formatCurrency(fin.longTermLoans)}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border-t border-slate-200 pt-3">
+                                                    <h5 class="text-xs font-bold text-slate-900">إجمالي الديون البنكية المباشرة</h5>
+                                                    <span class="font-extrabold text-slate-900 text-sm">{formatCurrency(fin.shortTermLoans + fin.longTermLoans)}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                                            <h4 class="font-bold text-slate-900 border-b border-slate-100 pb-3 flex items-center space-x-2 space-x-reverse">
+                                                <i data-lucide="shield-check" class="text-emerald-500"></i>
+                                                <span>تقييم الملاءة وحماية حقوق الدائنين</span>
+                                            </h4>
+                                            <div class="text-xs text-slate-600 leading-relaxed space-y-3">
+                                                <p>يعتبر مؤشر تغطية الفوائد البالغ <strong class="text-emerald-600 font-bold">{fin.interestCoverage}x</strong> من المؤشرات المتميزة جداً والتي تبث الطمأنينة الكاملة في نفوس الدائنين والبنوك الممولة، مما يعني أن الشركة تحقق أرباحاً تشغيلية قادرة على تغطية تكلفة خدمة الدين بسهولة تامة.</p>
+                                                <p>توزيع الديون بنسبة تمويل تبلغ <strong class="text-slate-950">{fin.debtToAssets}%</strong> من إجمالي الأصول يوضح توازن الهيكل التمويلي وعدم تعرض المنشأة لمخاطر الإفلاس أو التسييل الجبري في الأجل المتوسط.</p>
                                             </div>
                                         </div>
                                     </div>
