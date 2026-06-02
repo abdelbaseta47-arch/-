@@ -393,7 +393,7 @@
             { entryId: "ap47", accountCode: "5130", periodId: "p4", debit: 31000, credit: 0 },
             { entryId: "ap48", accountCode: "5140", periodId: "p4", debit: 13000, credit: 0 },
             { entryId: "ap49", accountCode: "5211", periodId: "p4", debit: 56000, credit: 0 },
-            { entryId: "ap50", accountCode: "5212", periodId: "p4", debit: 20000, credit: 0 },
+            { entryId: "ap50", text: "p4", accountCode: "5212", periodId: "p4", debit: 20000, credit: 0 },
             { entryId: "ap51", accountCode: "5213", periodId: "p4", debit: 16000, credit: 0 },
             { entryId: "ap52", accountCode: "5214", periodId: "p4", debit: 10000, credit: 0 },
             { entryId: "ap53", accountCode: "5215", periodId: "p4", debit: 5000, credit: 0 },
@@ -523,7 +523,7 @@
             const [currentView, setCurrentView] = useState('dashboard');
             const [activeStatementTab, setActiveStatementTab] = useState('balance');
 
-            // 2. إدارة البيانات في البنية الهيكلية الجديدة لربط الفترات بالكامل (مع دعم الذاكرة الداخلية LocalStorage)
+            // 2. إدارة البيانات مع دعم الذاكرة الداخلية LocalStorage
             const [periods, setPeriods] = useState(() => {
                 const saved = localStorage.getItem('finance_periods');
                 return saved ? JSON.parse(saved) : initialPeriods;
@@ -536,6 +536,26 @@
                 const saved = localStorage.getItem('finance_balances');
                 return saved ? JSON.parse(saved) : initialBalances;
             });
+
+            // 3. نظام الإشعارات المنبثقة البديل لـ alert/confirm
+            const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
+            const [confirmModal, setConfirmModal] = useState({ show: false, message: '', onConfirm: null });
+
+            const showToast = (message, type = 'success') => {
+                setToast({ show: true, message, type });
+                setTimeout(() => setToast(prev => ({ ...prev, show: false })), 4000);
+            };
+
+            const triggerConfirm = (message, action) => {
+                setConfirmModal({
+                    show: true,
+                    message,
+                    onConfirm: () => {
+                        action();
+                        setConfirmModal(prev => ({ ...prev, show: false }));
+                    }
+                });
+            };
 
             // تحديث الذاكرة الداخلية عند أي تغيير في البيانات
             useEffect(() => {
@@ -550,21 +570,21 @@
                 localStorage.setItem('finance_balances', JSON.stringify(balances));
             }, [balances]);
 
-            // 3. فلاتر الفترات الموحدة على مستوى المنصة بالكامل
+            // 4. فلاتر الفترات الموحدة على مستوى المنصة بالكامل
             const [currentPeriodId, setCurrentPeriodId] = useState("p6");
             const [comparePeriodId, setComparePeriodId] = useState("p5");
 
-            // 4. نموذج إضافة / تعديل الحسابات تفاعلياً
+            // 5. نموذج إضافة / تعديل الحسابات تفاعلياً
             const [showAccountModal, setShowAccountModal] = useState(false);
             const [modalMode, setModalMode] = useState('add');
             const [selectedAccountForEdit, setSelectedAccountForEdit] = useState(null);
             const [accountForm, setAccountForm] = useState({ code: '', nameAr: '', category: 'Assets', subCategory: 'Current Assets' });
 
-            // 5. نموذج إدخال أرصدة يدوي تفاعلي لفترة معينة
+            // 6. نموذج إدخال أرصدة يدوي تفاعلي لفترة معينة
             const [showBalanceModal, setShowBalanceModal] = useState(false);
             const [balanceForm, setBalanceForm] = useState({ accountCode: '', periodId: '', debit: 0, credit: 0 });
 
-            // 6. متغيرات لوحة محاكاة السيناريوهات المالية (ماذا لو؟)
+            // 7. متغيرات لوحة محاكاة السيناريوهات المالية (ماذا لو؟)
             const [simSalesGrowth, setSimSalesGrowth] = useState(0); 
             const [simCogsRatio, setSimCogsRatio] = useState(43); 
             const [simOpexRatio, setSimOpexRatio] = useState(21); 
@@ -825,10 +845,10 @@
                         setAccounts(parsedAccounts);
                         setPeriods(parsedPeriods);
                         setBalances(prev => [...prev, ...parsedBalances]);
-                        alert("تم استيراد ومعالجة ميزان المراجعة وتوزيع الأرصدة على الفترات المذكورة بنجاح!");
+                        showToast("تم استيراد ميزان المراجعة وتوزيع الأرصدة بنجاح!", "success");
                         setCurrentView('dashboard');
                     } else {
-                        alert("تنبيه: لم نتمكن من العثور على سجلات صالحة في الملف المرفوع. يرجى استخدام القالب المعتمد.");
+                        showToast("لم نتمكن من العثور على سجلات صالحة في ملف الإكسل.", "error");
                     }
                 };
                 reader.readAsBinaryString(file);
@@ -837,13 +857,13 @@
             const handleAddAccount = (e) => {
                 e.preventDefault();
                 if (!accountForm.code || !accountForm.nameAr) {
-                    alert("يرجى ملء كافة الحقول الإلزامية.");
+                    showToast("يرجى ملء كافة الحقول الإلزامية.", "error");
                     return;
                 }
                 
                 if (modalMode === 'add') {
                     if (accounts.some(acc => acc.code === accountForm.code)) {
-                        alert("كود الحساب هذا مسجل مسبقاً في الدليل الموحد.");
+                        showToast("كود الحساب هذا مسجل مسبقاً في الدليل الموحد.", "error");
                         return;
                     }
                     const newAcc = {
@@ -855,54 +875,108 @@
                         isCustom: true
                     };
                     setAccounts(prev => [...prev, newAcc]);
-                    alert("تم إضافة الحساب بنجاح لدليل الحسابات.");
+                    showToast("تم إضافة الحساب بنجاح لدليل الحسابات.", "success");
                 } else if (modalMode === 'edit') {
                     setAccounts(prev => prev.map(acc => acc.id === selectedAccountForEdit.id ? { ...acc, nameAr: accountForm.nameAr, category: accountForm.category, subCategory: accountForm.subCategory } : acc));
-                    alert("تم تحديث بيانات الحساب بنجاح.");
+                    showToast("تم تحديث بيانات الحساب بنجاح.", "success");
                 }
                 setShowAccountModal(false);
                 setAccountForm({ code: '', nameAr: '', category: 'Assets', subCategory: 'Current Assets' });
             };
 
             const handleDeleteAccount = (accId, accCode) => {
-                if (confirm("هل أنت متأكد من رغبتك في حذف هذا الحساب؟ سيتم حذف كافة الأرصدة المرتبطة به في الفترات المختلفة.")) {
+                triggerConfirm("هل أنت متأكد من رغبتك في حذف هذا الحساب؟ سيتم حذف كافة الأرصدة المرتبطة به.", () => {
                     setAccounts(prev => prev.filter(acc => acc.id !== accId));
                     setBalances(prev => prev.filter(b => b.accountCode !== accCode));
-                    alert("تم حذف الحساب وكافة أرصدته من ميزان المراجعة.");
-                }
+                    showToast("تم حذف الحساب وكافة أرصدته من ميزان المراجعة.", "success");
+                });
             };
 
             const handleClearAllBalances = () => {
-                if (confirm("تحذير أمني: هل أنت متأكد من مسح وتصفير جميع أرصدة ميزان المراجعة المدخلة؟ (لن يتم حذف دليل الحسابات)")) {
+                triggerConfirm("تحذير أمني: هل أنت متأكد من مسح وتصفير جميع أرصدة ميزان المراجعة المدخلة؟", () => {
                     setBalances([]);
-                    alert("تم مسح كافة الأرصدة بنجاح، يمكنك الآن إدخال أو استيراد أرصدة جديدة.");
-                }
+                    showToast("تم مسح كافة الأرصدة بنجاح، يمكنك إدخال أرصدة جديدة.", "success");
+                });
             };
 
             const handleRestoreDefaults = () => {
-                if(confirm("تحذير: هل تريد مسح بياناتك الحالية واستعادة البيانات الافتراضية التجريبية للمنصة؟")) {
+                triggerConfirm("هل تريد مسح بياناتك الحالية واستعادة البيانات الافتراضية التجريبية للمنصة؟", () => {
                     setAccounts(initialAccounts);
                     setPeriods(initialPeriods);
                     setBalances(initialBalances);
                     setCurrentPeriodId("p6");
                     setComparePeriodId("p5");
-                    alert("تمت استعادة البيانات التجريبية بنجاح.");
-                }
+                    showToast("تمت استعادة البيانات التجريبية بنجاح.", "success");
+                });
             };
 
-            useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
-            });
+            // حساب تقديرات التحصيلات والمدفوعات التشغيلية
+            const customerAnalysis = useMemo(() => {
+                // التحصيلات التقديرية = مبيعات الفترة + عملاء أول الفترة - عملاء آخر الفترة
+                const sales = finCurrent.netSales;
+                const endingReceivables = finCurrent.receivables;
+                const beginningReceivables = finCompare.receivables;
+                const estimatedCollections = sales + beginningReceivables - endingReceivables;
+                const eclRate = endingReceivables > 0 ? ((finCurrent.eclAllowance / endingReceivables) * 100).toFixed(1) : "0.0";
+                
+                return {
+                    sales,
+                    endingReceivables,
+                    beginningReceivables,
+                    estimatedCollections,
+                    eclRate
+                };
+            }, [finCurrent, finCompare]);
+
+            const supplierAnalysis = useMemo(() => {
+                // المدفوعات التقديرية = تكلفة المبيعات + موردين أول الفترة - موردين آخر الفترة
+                const cogs = finCurrent.totalCogs;
+                const endingPayables = finCurrent.payables;
+                const beginningPayables = finCompare.payables;
+                const estimatedPayments = cogs + beginningPayables - endingPayables;
+                
+                return {
+                    cogs,
+                    endingPayables,
+                    beginningPayables,
+                    estimatedPayments
+                };
+            }, [finCurrent, finCompare]);
 
             return (
                 <div class="min-h-screen flex bg-slate-50/50 text-slate-800">
                     
-                    {/* 1. القائمة الجانبية المحدثة (Sidebar) */}
+                    {/* نظام الإشعارات المنبثقة المخصص */}
+                    {toast.show && (
+                        <div class="fixed top-5 left-5 z-50 fade-in flex items-center p-4 rounded-xl shadow-xl border bg-white text-slate-900 border-slate-200">
+                            <div class={`p-2 rounded-lg ml-3 ${toast.type === 'success' ? 'bg-emerald-100 text-emerald-600' : 'bg-red-100 text-red-600'}`}>
+                                <i data-lucide={toast.type === 'success' ? 'check-circle' : 'alert-circle'} class="w-5 h-5"></i>
+                            </div>
+                            <p class="text-xs font-bold">{toast.message}</p>
+                        </div>
+                    )}
+
+                    {/* نافذة التأكيد المخصصة */}
+                    {confirmModal.show && (
+                        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div class="bg-white rounded-2xl shadow-xl border w-full max-w-md p-6 space-y-6 fade-in">
+                                <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                    <i data-lucide="help-circle" class="text-amber-500 w-5 h-5"></i>
+                                    تأكيد الإجراء المهني
+                                </h4>
+                                <p class="text-xs text-slate-600 leading-relaxed font-semibold">{confirmModal.message}</p>
+                                <div class="flex justify-end gap-3 pt-2">
+                                    <button onClick={() => setConfirmModal(prev => ({ ...prev, show: false }))} class="bg-slate-100 font-bold text-xs px-4 py-2 rounded-xl border">إلغاء</button>
+                                    <button onClick={confirmModal.onConfirm} class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-4 py-2 rounded-xl shadow-md">تأكيد ومتابعة</button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 1. القائمة الجانبية (Sidebar) */}
                     <aside class="w-80 bg-slate-900 text-white flex flex-col justify-between shadow-xl transition-all duration-300 z-10 shrink-0">
                         <div>
-                            {/* الشعار والهوية البصرية الاحترافية الفاخرة */}
+                            {/* الشعار والهوية البصرية الاحترافية */}
                             <div class="p-6 border-b border-slate-800 flex items-center space-x-3 space-x-reverse">
                                 <div class="bg-emerald-500 text-slate-900 p-2 rounded-xl shadow-lg shadow-emerald-500/20">
                                     <i data-lucide="trending-up" class="w-6 h-6"></i>
@@ -941,13 +1015,25 @@
                                     <span>القوائم المالية المقارنة</span>
                                 </button>
 
+                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-4 uppercase tracking-wider mb-2">تحليلات العملاء والموردين والنقد</p>
+
                                 <button 
-                                    onClick={() => setCurrentView('ingestion')}
-                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'ingestion' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                    onClick={() => setCurrentView('customers_suppliers')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'customers_suppliers' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
                                 >
-                                    <i data-lucide="file-up" class="w-5 h-5"></i>
-                                    <span>بوابة الرفع والدمج الموحد</span>
+                                    <i data-lucide="users" class="w-5 h-5"></i>
+                                    <span>تحليل العملاء والموردين</span>
                                 </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('cashflow_depth')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'cashflow_depth' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="coins" class="w-5 h-5"></i>
+                                    <span>تحليل التدفق والأثر المالي</span>
+                                </button>
+
+                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-4 uppercase tracking-wider mb-2">أدوات التخطيط والمخاطر</p>
 
                                 <button 
                                     onClick={() => setCurrentView('ratios')}
@@ -956,8 +1042,6 @@
                                     <i data-lucide="percent" class="w-5 h-5"></i>
                                     <span>مركز النسب المالية المقارن</span>
                                 </button>
-
-                                <p class="text-[11px] font-bold text-slate-500 px-3 pt-4 uppercase tracking-wider mb-2">أدوات التخطيط والمخاطر</p>
 
                                 <button 
                                     onClick={() => setCurrentView('risk')}
@@ -973,6 +1057,14 @@
                                 >
                                     <i data-lucide="line-chart" class="w-5 h-5"></i>
                                     <span>محاكاة وتنبؤات التدفق النقدي</span>
+                                </button>
+
+                                <button 
+                                    onClick={() => setCurrentView('ingestion')}
+                                    class={`w-full flex items-center space-x-3 space-x-reverse px-4 py-3 rounded-xl transition-all font-bold text-sm ${currentView === 'ingestion' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`}
+                                >
+                                    <i data-lucide="file-up" class="w-5 h-5"></i>
+                                    <span>بوابة الرفع والدمج الموحد</span>
                                 </button>
                             </nav>
                         </div>
@@ -990,13 +1082,13 @@
                         </div>
                     </aside>
 
-                    {/* 2. منطقة العمل الرئيسية (Main Area) تشمل الفلتر الموحد الجديد */}
+                    {/* 2. منطقة العمل الرئيسية */}
                     <main class="flex-1 flex flex-col min-h-screen overflow-y-auto">
                         
                         {/* شريط الأدوات العلوي والفلاتر المركزية الموحدة */}
                         <header class="bg-white border-b border-slate-200/80 px-8 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4 sticky top-0 z-20 shadow-sm">
                             <div>
-                                <h2 class="text-lg font-bold text-slate-900">أدوات التحكم والفلترة الموحدة للمنصة</h2>
+                                <h2 class="text-lg font-bold text-slate-900 font-sans">أدوات التحكم والفلترة الموحدة للمنصة</h2>
                                 <p class="text-xs text-slate-500 mt-1">يتم تحديث لوحات التحكم والقوائم والنسب والتحليلات تلقائياً للربط المباشر بين الفترات</p>
                             </div>
 
@@ -1052,7 +1144,7 @@
                                         </div>
                                     </div>
 
-                                    {/* بطاقات مؤشرات الأداء الأساسية KPIs المحدثة والمقارنة */}
+                                    {/* بطاقات مؤشرات الأداء الأساسية KPIs */}
                                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100/80 flex justify-between items-center relative overflow-hidden">
                                             <div class="space-y-2">
@@ -1127,7 +1219,7 @@
                                                 تحليل اتجاهات الربحية ومقارنتها عبر الفترات المحددة
                                             </h4>
                                             
-                                            {/* محاكاة رسم بياني SVG احترافي يوضح المقارنة بين فترتين لثلاثة عناصر أساسية */}
+                                            {/* محاكاة رسم بياني SVG احترافي */}
                                             <div class="h-64 flex flex-col justify-between">
                                                 <div class="flex-1 flex items-end justify-around pb-4 border-b border-slate-100">
                                                     {/* إيرادات */}
@@ -1223,7 +1315,7 @@
                                 </div>
                             )}
 
-                            {/* شاشة ميزان المراجعة متعدد الفترات المحدثة بالكامل (TRIAL BALANCE LIST) */}
+                            {/* شاشة ميزان المراجعة متعدد الفترات (TRIAL BALANCE LIST) */}
                             {currentView === 'trial_balance_list' && (
                                 <div class="space-y-6 fade-in">
                                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -1254,21 +1346,18 @@
                                                 class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-2"
                                             >
                                                 <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                                                إدخال رصيد
+                                                إدخل رصيد يدوي
                                             </button>
                                         </div>
                                     </div>
 
-                                    {/* جدول عرض ميزان المراجعة المطور بالكامل والمبني على الفلاتر والفترة النشطة */}
+                                    {/* جدول عرض ميزان المراجعة */}
                                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                                         <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                                             <h4 class="text-xs font-extrabold text-slate-900 flex items-center gap-2">
                                                 <i data-lucide="list" class="text-emerald-500 w-4 h-4"></i>
                                                 قائمة الأرصدة المعتمدة للفترة: {getPeriodName(currentPeriodId)}
                                             </h4>
-                                            <span class="text-[10px] text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-bold border border-emerald-100">
-                                                يتم الحفظ تلقائياً في الذاكرة
-                                            </span>
                                         </div>
 
                                         <div class="overflow-x-auto">
@@ -1307,7 +1396,6 @@
                                                                                 setShowBalanceModal(true);
                                                                             }}
                                                                             class="text-emerald-600 hover:text-white bg-emerald-50 hover:bg-emerald-600 px-2 py-1.5 rounded transition-colors font-bold"
-                                                                            title="تعديل رصيد الحساب للفترة الحالية"
                                                                         >
                                                                             تعديل الرصيد
                                                                         </button>
@@ -1319,7 +1407,6 @@
                                                                                 setShowAccountModal(true);
                                                                             }}
                                                                             class="text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 px-2 py-1.5 rounded transition-colors font-bold"
-                                                                            title="تعديل اسم وتصنيف الحساب"
                                                                         >
                                                                             إعدادات
                                                                         </button>
@@ -1327,7 +1414,6 @@
                                                                             <button 
                                                                                 onClick={() => handleDeleteAccount(acc.id, acc.code)}
                                                                                 class="text-red-600 hover:text-white bg-red-50 hover:bg-red-600 px-2 py-1.5 rounded transition-colors font-bold"
-                                                                                title="حذف الحساب نهائياً"
                                                                             >
                                                                                 حذف
                                                                             </button>
@@ -1364,6 +1450,227 @@
                                 </div>
                             )}
 
+                            {/* شاشة تحليل العملاء والموردين ودورة رأس المال العامل */}
+                            {currentView === 'customers_suppliers' && (
+                                <div class="space-y-6 fade-in">
+                                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                        <div>
+                                            <h3 class="text-2xl font-extrabold text-slate-900">تحليل ذمم العملاء والموردين</h3>
+                                            <p class="text-slate-500 text-xs mt-1">تتبع كفاءة التحصيل، فترات الائتمان، ومجموع التدفقات التشغيلية المحققة من الأرصدة</p>
+                                        </div>
+                                        <div class="text-[11px] font-bold text-slate-600 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+                                            الموازنة المقارنة: {getPeriodName(currentPeriodId)} ضد {getPeriodName(comparePeriodId)}
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                                        {/* لوحة تحليلات العملاء */}
+                                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+                                            <div class="flex justify-between items-center pb-4 border-b">
+                                                <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                                    <i data-lucide="users" class="text-emerald-500 w-5 h-5"></i>
+                                                    تحليلات وإدارة ذمم العملاء (Receivables)
+                                                </h4>
+                                                <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2.5 py-1 rounded-full border border-emerald-200">الذمم المدينة</span>
+                                            </div>
+
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">دورة تحصيل العملاء (DSO)</span>
+                                                    <span class="text-lg font-black text-slate-900">{finCurrent.dso} يوم</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">الفترة المقارنة: {finCompare.dso} يوم</p>
+                                                </div>
+
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">صافي رصيد العملاء</span>
+                                                    <span class="text-lg font-black text-slate-900">{formatCurrency(customerAnalysis.endingReceivables)}</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">الأولى للفترة: {formatCurrency(customerAnalysis.beginningReceivables)}</p>
+                                                </div>
+
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">معدل تغطية مخصص الـ ECL</span>
+                                                    <span class="text-lg font-black text-slate-900">{customerAnalysis.eclRate}%</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">تغطية الخسائر الائتمانية</p>
+                                                </div>
+
+                                                <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-100">
+                                                    <span class="text-[10px] font-bold text-emerald-800 block mb-1">التحصيلات التقديرية</span>
+                                                    <span class="text-lg font-black text-emerald-900">{formatCurrency(customerAnalysis.estimatedCollections)}</span>
+                                                    <p class="text-[9px] text-emerald-600 mt-1">المحصل الفعلي التقريبي</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-4 bg-emerald-50/50 rounded-xl border border-emerald-200/60 text-xs space-y-2">
+                                                <h5 class="font-bold text-emerald-800 flex items-center gap-1.5">
+                                                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                                                    توصية مدقق الحسابات:
+                                                </h5>
+                                                <p class="text-slate-600 font-semibold leading-relaxed">
+                                                    معدل التحصيل المقدر بـ {formatCurrency(customerAnalysis.estimatedCollections)} ريال يعكس كفاءة جيدة لسياسات البيع الآجل. يوصى بالحفاظ على معدل DSO دون الـ 20 يوماً لتقليل الأصول الراكدة.
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* لوحة تحليلات الموردين */}
+                                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
+                                            <div class="flex justify-between items-center pb-4 border-b">
+                                                <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                                    <i data-lucide="truck" class="text-indigo-500 w-5 h-5"></i>
+                                                    تحليلات وإدارة ذمم الموردين (Payables)
+                                                </h4>
+                                                <span class="text-[10px] bg-indigo-50 text-indigo-700 font-bold px-2.5 py-1 rounded-full border border-indigo-200">الذمم الدائنة</span>
+                                            </div>
+
+                                            <div class="grid grid-cols-2 gap-4">
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">دورة سداد الموردين (DPO)</span>
+                                                    <span class="text-lg font-black text-slate-900">{finCurrent.dpo} يوم</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">الفترة المقارنة: {finCompare.dpo} يوم</p>
+                                                </div>
+
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">صافي رصيد الموردين</span>
+                                                    <span class="text-lg font-black text-slate-900">{formatCurrency(supplierAnalysis.endingPayables)}</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">الأولى للفترة: {formatCurrency(supplierAnalysis.beginningPayables)}</p>
+                                                </div>
+
+                                                <div class="bg-slate-50 p-4 rounded-xl border">
+                                                    <span class="text-[10px] font-bold text-slate-500 block mb-1">دورة التحويل النقدي (CCC)</span>
+                                                    <span class="text-lg font-black text-slate-900">{finCurrent.ccc} يوم</span>
+                                                    <p class="text-[9px] text-slate-400 mt-1">الفترة المقارنة: {finCompare.ccc} يوم</p>
+                                                </div>
+
+                                                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                                                    <span class="text-[10px] font-bold text-indigo-800 block mb-1">المدفوعات التشغيلية التقديرية</span>
+                                                    <span class="text-lg font-black text-indigo-900">{formatCurrency(supplierAnalysis.estimatedPayments)}</span>
+                                                    <p class="text-[9px] text-indigo-600 mt-1">المسدد الفعلي التقريبي</p>
+                                                </div>
+                                            </div>
+
+                                            <div class="p-4 bg-indigo-50/50 rounded-xl border border-indigo-200/60 text-xs space-y-2">
+                                                <h5 class="font-bold text-indigo-800 flex items-center gap-1.5">
+                                                    <i data-lucide="info" class="w-4 h-4"></i>
+                                                    تحليل رأس المال العامل التشغيلي:
+                                                </h5>
+                                                <p class="text-slate-600 font-semibold leading-relaxed">
+                                                    المدفوعات التقديرية للموردين بلغت {formatCurrency(supplierAnalysis.estimatedPayments)} ريال. الحفاظ على فجوة دورة التحويل النقدي (CCC) عند مستوى منخفض يدعم تدفق السيولة الداخلي للشركة دون الحاجة لتمويل خارجي.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* شاشة تحليل التدفق النقدي المتقدم والأثر المالي */}
+                            {currentView === 'cashflow_depth' && (
+                                <div class="space-y-6 fade-in">
+                                    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                                        <div>
+                                            <h3 class="text-2xl font-extrabold text-slate-900 font-sans">تحليل التدفق النقدي والأثر المالي المتقدم</h3>
+                                            <p class="text-slate-500 text-xs mt-1">دراسة معمقة لجودة الأرباح ومستوى السيولة الحقيقية المترتبة على الأنشطة المحاسبية</p>
+                                        </div>
+                                    </div>
+
+                                    {/* بطاقات تحليلات جودة التدفقات النقدية */}
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                        {/* جودة الأرباح */}
+                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs font-bold text-slate-500">مقياس جودة الأرباح (Quality of Earnings)</span>
+                                                <span class="bg-emerald-50 text-emerald-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-emerald-100">جودة السيولة</span>
+                                            </div>
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-2xl font-black text-slate-900">
+                                                    {finCurrent.netIncome > 0 ? (( (finCurrent.netIncome + finCurrent.opexDepreciation) / finCurrent.netIncome ) * 100).toFixed(1) : "0.0"}%
+                                                </span>
+                                            </div>
+                                            <p class="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                                                يقيس مدى تدعيم الأرباح المحققة بتدفقات نقدية تشغيلية حقيقية. النسبة المتفوقة على 100% تعكس تدفقاً ممتازاً وربحية مدعومة بالسيولة.
+                                            </p>
+                                        </div>
+
+                                        {/* صافي التدفق النقدي الحر FCF */}
+                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs font-bold text-slate-500">التدفق النقدي الحر (Free Cash Flow)</span>
+                                                <span class="bg-blue-50 text-blue-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-blue-100">الملاءة المالية</span>
+                                            </div>
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-xl font-black text-blue-600">
+                                                    {formatCurrency( (finCurrent.netIncome + finCurrent.opexDepreciation) - (finCurrent.machinery > finCompare.machinery ? getDiff(finCurrent.machinery, finCompare.machinery) : 10000) )}
+                                                </span>
+                                            </div>
+                                            <p class="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                                                النقدية المتبقية بعد سداد المصاريف الاستثمارية والصيانة الأساسية. تمنح مجلس الإدارة خيارات التوسع أو توزيع الأرباح.
+                                            </p>
+                                        </div>
+
+                                        {/* كفاءة التشغيل النقدي */}
+                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-xs font-bold text-slate-500">معدل تغطية خدمة الديون</span>
+                                                <span class="bg-amber-50 text-amber-700 text-[9px] font-bold px-2 py-0.5 rounded-full border border-amber-100">الاستقرار</span>
+                                            </div>
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-2xl font-black text-slate-900">
+                                                    {finCurrent.totalCurrentLiabilities > 0 ? (( (finCurrent.netIncome + finCurrent.opexDepreciation) / finCurrent.totalCurrentLiabilities ) * 100).toFixed(1) : "0"}%
+                                                </span>
+                                            </div>
+                                            <p class="text-[10px] text-slate-500 font-semibold leading-relaxed">
+                                                يقيس قدرة النقد الناتج عن التشغيل في تغطية الالتزامات والديون متداولة الأجل دون الحاجة لتمويل إضافي.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* مصفوفة الأثر المالي على الحسابات */}
+                                    <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-8 space-y-6">
+                                        <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+                                            <i data-lucide="bar-chart-2" class="text-emerald-500 w-5 h-5"></i>
+                                            مصفوفة الأثر المالي للتدفقات النقدية على حسابات القوائم
+                                        </h4>
+
+                                        <div class="overflow-x-auto">
+                                            <table class="w-full text-right text-xs">
+                                                <thead>
+                                                    <tr class="bg-slate-50 text-slate-500 font-bold border-b">
+                                                        <th class="p-4">البند المالي</th>
+                                                        <th class="p-4 text-center">نوع التدفق المرتبط</th>
+                                                        <th class="p-4 text-center">الأثر الحالي</th>
+                                                        <th class="p-4">الوصف والتحليل المترتب</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
+                                                    <tr>
+                                                        <td class="p-4 font-bold">النقدية والأرصدة بالبنوك</td>
+                                                        <td class="p-4 text-center text-blue-600">تدفق مجمع</td>
+                                                        <td class="p-4 text-center">
+                                                            <span class="text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full font-bold">إيجابي تشغيلي</span>
+                                                        </td>
+                                                        <td class="p-4 text-slate-500">تم تسجيل نمو بمقدار {formatPercent(getPercentChange(finCurrent.totalCashAndEquivalents, finCompare.totalCashAndEquivalents))} في الأرصدة بفضل المبيعات والتحصيلات النشطة.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="p-4 font-bold">ذمم العملاء المدينة</td>
+                                                        <td class="p-4 text-center text-emerald-600">تدفق تشغيلي</td>
+                                                        <td class="p-4 text-center">
+                                                            <span class="text-blue-600 bg-blue-50 px-2.5 py-1 rounded-full font-bold">ارتفاع الذمم آجل</span>
+                                                        </td>
+                                                        <td class="p-4 text-slate-500">تغير العملاء بمعدل {formatCurrency(getDiff(finCurrent.receivables, finCompare.receivables))} ريال، مما يؤثر على مستوى سرعة التحصيل.</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="p-4 font-bold">المخزون السلعي وتكلفة البضاعة</td>
+                                                        <td class="p-4 text-center text-emerald-600">تدفق تشغيلي</td>
+                                                        <td class="p-4 text-center">
+                                                            <span class="text-slate-600 bg-slate-50 px-2.5 py-1 rounded-full font-bold">مستقر نسبي</span>
+                                                        </td>
+                                                        <td class="p-4 text-slate-500">الحفاظ على نسبة DIO متقاربة تشير إلى توازن كامل بين الإنتاج والتدفقات النقدية الخارجة للموردين.</td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
                             {/* شاشة القوائم المالية المقارنة الفنية (STATEMENTS) */}
                             {currentView === 'statements' && (
                                 <div class="space-y-6 fade-in">
@@ -1374,7 +1681,7 @@
                                         </div>
                                         
                                         {/* خيارات تبويب القوائم المالية الأربعة المعتمدة */}
-                                        <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200/80 flex gap-1">
+                                        <div class="bg-white p-1 rounded-xl shadow-sm border border-slate-200/80 flex gap-1 font-sans">
                                             <button 
                                                 onClick={() => setActiveStatementTab('balance')}
                                                 class={`px-4 py-2 rounded-lg font-bold text-xs transition-all ${activeStatementTab === 'balance' ? 'bg-slate-900 text-white' : 'text-slate-500 hover:text-slate-950'}`}
@@ -1402,7 +1709,7 @@
                                         </div>
                                     </div>
 
-                                    {/* جدول القوائم المالية المقارن الديناميكي والمترابط بالكامل */}
+                                    {/* جدول القوائم المالية المقارن */}
                                     <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 overflow-hidden">
                                         <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                                             <div>
@@ -1416,7 +1723,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="overflow-x-auto">
+                                        <div class="overflow-x-auto font-sans">
                                             {/* (أ) جدول المركز المالي المقارن */}
                                             {activeStatementTab === 'balance' && (
                                                 <table class="w-full text-right border-collapse text-xs">
@@ -1484,20 +1791,6 @@
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.netRightOfUse, finCompare.netRightOfUse))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.netRightOfUse, finCompare.netRightOfUse))}</td>
                                                         </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">الأصول غير الملموسة والشهرة (Goodwill)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.intangibleAssets + finCurrent.goodwill)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.intangibleAssets + finCompare.goodwill)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.intangibleAssets + finCurrent.goodwill, finCompare.intangibleAssets + finCompare.goodwill))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.intangibleAssets + finCurrent.goodwill, finCompare.intangibleAssets + finCompare.goodwill))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">العقارات الاستثمارية والاستثمارات الزميلة والضرائب</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.investRealestate + finCurrent.investAssociates + finCurrent.deferredTaxAssets)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.investRealestate + finCompare.investAssociates + finCompare.deferredTaxAssets)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.investRealestate + finCurrent.investAssociates + finCurrent.deferredTaxAssets, finCompare.investRealestate + finCompare.investAssociates + finCompare.deferredTaxAssets))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.investRealestate + finCurrent.investAssociates + finCurrent.deferredTaxAssets, finCompare.investRealestate + finCompare.investAssociates + finCompare.deferredTaxAssets))}</td>
-                                                        </tr>
                                                         <tr class="bg-slate-100 text-slate-900 font-extrabold">
                                                             <td class="p-4">إجمالي الأصول غير المتداولة (ب)</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCurrent.totalNonCurrentAssets)}</td>
@@ -1513,7 +1806,7 @@
                                                             <td class="p-4 text-center text-emerald-400">{formatPercent(getPercentChange(finCurrent.totalAssets, finCompare.totalAssets))}</td>
                                                         </tr>
 
-                                                        {/* الالتزامات المتداولة */}
+                                                        {/* الالتزامات وحقوق الملكية */}
                                                         <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">الالتزامات المتداولة</td></tr>
                                                         <tr>
                                                             <td class="p-4 pr-8">الموردون والمصاريف المستحقة</td>
@@ -1522,74 +1815,12 @@
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalPayables, finCompare.totalPayables))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalPayables, finCompare.totalPayables))}</td>
                                                         </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">تسهيلات بنكية قصيرة الأجل والتزامات إيجار</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.shortTermLoans + finCurrent.leaseLiabilitiesCurrent)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.shortTermLoans + finCompare.leaseLiabilitiesCurrent)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.shortTermLoans + finCurrent.leaseLiabilitiesCurrent, finCompare.shortTermLoans + finCompare.leaseLiabilitiesCurrent))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.shortTermLoans + finCurrent.leaseLiabilitiesCurrent, finCompare.shortTermLoans + finCompare.leaseLiabilitiesCurrent))}</td>
-                                                        </tr>
                                                         <tr class="bg-slate-100 text-slate-900 font-extrabold">
                                                             <td class="p-4">إجمالي الالتزامات المتداولة (ج)</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCurrent.totalCurrentLiabilities)}</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCompare.totalCurrentLiabilities)}</td>
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalCurrentLiabilities, finCompare.totalCurrentLiabilities))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalCurrentLiabilities, finCompare.totalCurrentLiabilities))}</td>
-                                                        </tr>
-
-                                                        {/* الالتزامات غير المتداولة */}
-                                                        <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">الالتزامات غير المتداولة</td></tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">قروض طويلة الأجل والتزامات إيجار ممتدة</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.longTermLoans + finCurrent.leaseLiabilitiesNonCurrent)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.longTermLoans + finCompare.leaseLiabilitiesNonCurrent)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.longTermLoans + finCurrent.leaseLiabilitiesNonCurrent, finCompare.longTermLoans + finCompare.leaseLiabilitiesNonCurrent))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.longTermLoans + finCurrent.leaseLiabilitiesNonCurrent, finCompare.longTermLoans + finCompare.leaseLiabilitiesNonCurrent))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">مخصص منافع الموظفين والالتزامات الضريبية المؤجلة</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.endOfServiceProvision + finCurrent.deferredTaxLiabilities + finCurrent.otherProvisions)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.endOfServiceProvision + finCompare.deferredTaxLiabilities + finCompare.otherProvisions)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.endOfServiceProvision + finCurrent.deferredTaxLiabilities + finCurrent.otherProvisions, finCompare.endOfServiceProvision + finCompare.deferredTaxLiabilities + finCompare.otherProvisions))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.endOfServiceProvision + finCurrent.deferredTaxLiabilities + finCompare.otherProvisions, finCompare.endOfServiceProvision + finCompare.deferredTaxLiabilities + finCompare.otherProvisions))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">إجمالي الالتزامات غير المتداولة (د)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.totalNonCurrentLiabilities)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.totalNonCurrentLiabilities)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalNonCurrentLiabilities, finCompare.totalNonCurrentLiabilities))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalNonCurrentLiabilities, finCompare.totalNonCurrentLiabilities))}</td>
-                                                        </tr>
-
-                                                        {/* حقوق الملكية */}
-                                                        <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">حقوق الملكية للمساهمين</td></tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">رأس المال المدفوع بالكامل والاحتياطيات وعلاوة الإصدار</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.capital + finCurrent.sharePremium + finCurrent.statutoryReserve + finCurrent.otherComprehensiveIncome)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.capital + finCompare.sharePremium + finCompare.statutoryReserve + finCompare.otherComprehensiveIncome)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.capital + finCurrent.sharePremium + finCurrent.statutoryReserve + finCurrent.otherComprehensiveIncome, finCompare.capital + finCompare.sharePremium + finCompare.statutoryReserve + finCompare.otherComprehensiveIncome))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.capital + finCurrent.sharePremium + finCurrent.statutoryReserve + finCurrent.otherComprehensiveIncome, finCompare.capital + finCompare.sharePremium + finCompare.statutoryReserve + finCompare.otherComprehensiveIncome))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">الأرباح المبقاة المدورة (شاملة أرباح الفترة الحالية)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.retainedEarnings + finCurrent.netIncome)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.retainedEarnings + finCompare.netIncome)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.retainedEarnings + finCurrent.netIncome, finCompare.retainedEarnings + finCompare.netIncome))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.retainedEarnings + finCurrent.netIncome, finCompare.retainedEarnings + finCompare.netIncome))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">إجمالي حقوق الملكية للمساهمين (هـ)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.totalEquity)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.totalEquity)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalEquity, finCompare.totalEquity))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalEquity, finCompare.totalEquity))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-900 text-white font-extrabold">
-                                                            <td class="p-4">إجمالي الالتزامات وحقوق الملكية (ج + د + هـ)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.totalLiabilities + finCurrent.totalEquity)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.totalLiabilities + finCompare.totalEquity)}</td>
-                                                            <td class="p-4 text-center text-emerald-400">{formatCurrency(getDiff(finCurrent.totalLiabilities + finCurrent.totalEquity, finCompare.totalLiabilities + finCompare.totalEquity))}</td>
-                                                            <td class="p-4 text-center text-emerald-400">{formatPercent(getPercentChange(finCurrent.totalLiabilities + finCurrent.totalEquity, finCompare.totalLiabilities + finCompare.totalEquity))}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1609,18 +1840,11 @@
                                                     </thead>
                                                     <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
                                                         <tr>
-                                                            <td class="p-4 font-bold text-slate-900">إجمالي إيرادات المبيعات والخدمات والمبيعات الأخرى</td>
+                                                            <td class="p-4 font-bold text-slate-900">إجمالي إيرادات المبيعات والخدمات</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCurrent.revenueGoods + finCurrent.revenueServices + finCurrent.revenueOther)}</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCompare.revenueGoods + finCompare.revenueServices + finCompare.revenueOther)}</td>
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.revenueGoods + finCurrent.revenueServices + finCurrent.revenueOther, finCompare.revenueGoods + finCompare.revenueServices + finCompare.revenueOther))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.revenueGoods + finCurrent.revenueServices + finCompare.revenueOther, finCompare.revenueGoods + finCompare.revenueServices + finCompare.revenueOther))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8 text-red-500">يخصم: الخصومات والمسموحات التجارية الممنوحة</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.salesDiscounts)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCompare.salesDiscounts)})</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.salesDiscounts, finCompare.salesDiscounts))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.salesDiscounts, finCompare.salesDiscounts))}</td>
                                                         </tr>
                                                         <tr class="bg-slate-100 text-slate-900 font-extrabold">
                                                             <td class="p-4">صافي الإيرادات التشغيلية الكلية</td>
@@ -1628,69 +1852,6 @@
                                                             <td class="p-4 text-center">{formatCurrency(finCompare.netSales)}</td>
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.netSales, finCompare.netSales))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.netSales, finCompare.netSales))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 text-red-500">يخصم: تكلفة البضاعة المباعة (المباشرة والمصنع)</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.totalCogs)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCompare.totalCogs)})</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalCogs, finCompare.totalCogs))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalCogs, finCompare.totalCogs))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-200 text-slate-950 font-extrabold">
-                                                            <td class="p-4">إجمالي ربح الفترة (مجمل هامش الربح)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.grossProfit)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.grossProfit)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.grossProfit, finCompare.grossProfit))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.grossProfit, finCompare.grossProfit))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 text-red-500">يخصم: مصاريف عمومية وإدارية وتسويقية وإهلاك إداري</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.totalOpex)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCompare.totalOpex)})</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.totalOpex, finCompare.totalOpex))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.totalOpex, finCompare.totalOpex))}</td>
-                                                        </tr>
-                                                        <tr class="bg-indigo-50 text-indigo-950 font-extrabold">
-                                                            <td class="p-4">الربح التشغيلي قبل تكاليف التمويل والفوائد والزكاة (EBIT)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.operatingProfit)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.operatingProfit)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.operatingProfit, finCompare.operatingProfit))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.operatingProfit, finCompare.operatingProfit))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4">يضاف: الإيرادات التمويلية الدائنة</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.revenueFinance)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.revenueFinance)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.revenueFinance, finCompare.revenueFinance))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.revenueFinance, finCompare.revenueFinance))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 text-red-500">يخصم: تكاليف التمويل والفوائد البنكية وعقود الإيجار</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.financeCosts)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCompare.financeCosts)})</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.financeCosts, finCompare.financeCosts))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.financeCosts, finCompare.financeCosts))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">صافي الربح قبل الزكاة وضريبة الدخل التقديرية</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.netIncomeBeforeZakat)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.netIncomeBeforeZakat)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.netIncomeBeforeZakat, finCompare.netIncomeBeforeZakat))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.netIncomeBeforeZakat, finCompare.netIncomeBeforeZakat))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 text-red-500">يخصم: الزكاة الشرعية المقدرة للفترة</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.zakatTaxExpense)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCompare.zakatTaxExpense)})</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.zakatTaxExpense, finCompare.zakatTaxExpense))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.zakatTaxExpense, finCompare.zakatTaxExpense))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-900 text-white font-extrabold">
-                                                            <td class="p-4 text-base">صافي الربح النهائي الخاضع للتوزيع للفترة</td>
-                                                            <td class="p-4 text-center text-emerald-400 text-base">{formatCurrency(finCurrent.netIncome)}</td>
-                                                            <td class="p-4 text-center text-slate-300 text-base">{formatCurrency(finCompare.netIncome)}</td>
-                                                            <td class="p-4 text-center text-emerald-400 text-base">{formatCurrency(getDiff(finCurrent.netIncome, finCompare.netIncome))}</td>
-                                                            <td class="p-4 text-center text-emerald-400 text-base">{formatPercent(getPercentChange(finCurrent.netIncome, finCompare.netIncome))}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1711,131 +1872,11 @@
                                                     <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
                                                         <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">الأنشطة التشغيلية</td></tr>
                                                         <tr>
-                                                            <td class="p-4 pr-8">صافي ربح الفترة قبل الزكاة</td>
+                                                            <td class="p-4 pr-8 font-semibold">صافي ربح الفترة قبل الزكاة</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCurrent.netIncomeBeforeZakat)}</td>
                                                             <td class="p-4 text-center">{formatCurrency(finCompare.netIncomeBeforeZakat)}</td>
                                                             <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.netIncomeBeforeZakat, finCompare.netIncomeBeforeZakat))}</td>
                                                             <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.netIncomeBeforeZakat, finCompare.netIncomeBeforeZakat))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8 text-emerald-500">تسويات وإهلاك أصول ثابتة للفترة غير النقدي</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.opexDepreciation + finCurrent.cogsDepreciation)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.opexDepreciation + finCompare.cogsDepreciation)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.opexDepreciation + finCurrent.cogsDepreciation, finCompare.opexDepreciation + finCompare.cogsDepreciation))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.opexDepreciation + finCurrent.cogsDepreciation, finCompare.opexDepreciation + finCompare.cogsDepreciation))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">التغير في صافي رأس المال العامل (العملاء والذمم والمدينين)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(-getDiff(finCurrent.netReceivables, finCompare.netReceivables))}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(-getDiff(finCompare.netReceivables, finCompare.netReceivables))}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(-getDiff(finCurrent.netReceivables, finCompare.netReceivables), -getDiff(finCompare.netReceivables, finCompare.netReceivables)))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">التغير في بضاعة المخزون والموردين</td>
-                                                            <td class="p-4 text-center">{formatCurrency(-getDiff(finCurrent.totalInventory, finCompare.totalInventory) + getDiff(finCurrent.totalPayables, finCompare.totalPayables))}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(0)}</td>
-                                                            <td class="p-4 text-center text-blue-600">-</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">صافي التدفقات النقدية من الأنشطة التشغيلية (أ)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.netIncome + finCurrent.opexDepreciation)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.netIncome + finCompare.opexDepreciation)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.netIncome + finCurrent.opexDepreciation, finCompare.netIncome + finCompare.opexDepreciation))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.netIncome + finCurrent.opexDepreciation, finCompare.netIncome + finCompare.opexDepreciation))}</td>
-                                                        </tr>
-
-                                                        <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">الأنشطة الاستثمارية</td></tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8 text-red-500">شراء أصول ثابتة وعقارات استثمارية مضافة</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.machinery > finCompare.machinery ? getDiff(finCurrent.machinery, finCompare.machinery) : 0)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(0)})</td>
-                                                            <td class="p-4 text-center text-blue-600">-</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">صافي التدفقات النقدية المستخدمة في الأنشطة الاستثمارية (ب)</td>
-                                                            <td class="p-4 text-center">({formatCurrency(finCurrent.machinery > finCompare.machinery ? getDiff(finCurrent.machinery, finCompare.machinery) : 10000)})</td>
-                                                            <td class="p-4 text-center">({formatCurrency(10000)})</td>
-                                                            <td class="p-4 text-center text-blue-600">-</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-
-                                                        <tr class="bg-slate-50/50 font-bold text-slate-900"><td colspan="5" class="p-4">الأنشطة التمويلية</td></tr>
-                                                        <tr>
-                                                            <td class="p-4 pr-8">الحصول على قروض وتسهيلات أو التزامات إيجارية</td>
-                                                            <td class="p-4 text-center">{formatCurrency(getDiff(finCurrent.longTermLoans, finCompare.longTermLoans))}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(0)}</td>
-                                                            <td class="p-4 text-center text-blue-600">-</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-100 text-slate-900 font-extrabold">
-                                                            <td class="p-4">صافي التدفقات النقدية الناتجة من الأنشطة التمويلية (ج)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(getDiff(finCurrent.longTermLoans, finCompare.longTermLoans))}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(0)}</td>
-                                                            <td class="p-4 text-center text-blue-600">-</td>
-                                                            <td class="p-4 text-center text-emerald-600">-</td>
-                                                        </tr>
-
-                                                        <tr class="bg-slate-900 text-white font-extrabold">
-                                                            <td class="p-4">صافي الزيادة / (النقص) في النقدية خلال الفترة (أ + ب + ج)</td>
-                                                            <td class="p-4 text-center">{formatCurrency(getDiff(finCurrent.totalCashAndEquivalents, finCompare.totalCashAndEquivalents))}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(0)}</td>
-                                                            <td class="p-4 text-center text-emerald-400">-</td>
-                                                            <td class="p-4 text-center text-emerald-400">-</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            )}
-
-                                            {/* (د) جدول قائمة التغيرات في حقوق الملكية المقارنة */}
-                                            {activeStatementTab === 'equity' && (
-                                                <table class="w-full text-right border-collapse text-xs">
-                                                    <thead>
-                                                        <tr class="bg-slate-50 text-slate-500 font-bold border-b border-slate-200/60">
-                                                            <th class="p-4 w-1/3">بنية حقوق الملكية للمساهمين</th>
-                                                            <th class="p-4 text-center">{getPeriodName(currentPeriodId)}</th>
-                                                            <th class="p-4 text-center">{getPeriodName(comparePeriodId)}</th>
-                                                            <th class="p-4 text-center text-blue-600">فرْق القيمة</th>
-                                                            <th class="p-4 text-center text-emerald-600">نسبة التغيير %</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
-                                                        <tr>
-                                                            <td class="p-4">رأس المال المصرح به والمدفوع</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.capital)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.capital)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.capital, finCompare.capital))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.capital, finCompare.capital))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4">علاوة الإصدار ورأس المال الإضافي</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.sharePremium)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.sharePremium)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.sharePremium, finCompare.sharePremium))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.sharePremium, finCompare.sharePremium))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4">الاحتياطي النظامي الإلزامي</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.statutoryReserve)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.statutoryReserve)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.statutoryReserve, finCompare.statutoryReserve))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.statutoryReserve, finCompare.statutoryReserve))}</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="p-4">الأرباح المبقاة المدورة مع أرباح الفترة الحالية</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCurrent.retainedEarnings + finCurrent.netIncome)}</td>
-                                                            <td class="p-4 text-center">{formatCurrency(finCompare.retainedEarnings + finCompare.netIncome)}</td>
-                                                            <td class="p-4 text-center text-blue-600">{formatCurrency(getDiff(finCurrent.retainedEarnings + finCurrent.netIncome, finCompare.retainedEarnings + finCompare.netIncome))}</td>
-                                                            <td class="p-4 text-center text-emerald-600">{formatPercent(getPercentChange(finCurrent.retainedEarnings + finCurrent.netIncome, finCompare.retainedEarnings + finCompare.netIncome))}</td>
-                                                        </tr>
-                                                        <tr class="bg-slate-900 text-white font-extrabold">
-                                                            <td class="p-4">إجمالي حقوق الملكية المساهمين النهائي بالكامل</td>
-                                                            <td class="p-4 text-center text-emerald-400">{formatCurrency(finCurrent.totalEquity)}</td>
-                                                            <td class="p-4 text-center text-slate-300">{formatCurrency(finCompare.totalEquity)}</td>
-                                                            <td class="p-4 text-center text-emerald-400">{formatCurrency(getDiff(finCurrent.totalEquity, finCompare.totalEquity))}</td>
-                                                            <td class="p-4 text-center text-emerald-400">{formatPercent(getPercentChange(finCurrent.totalEquity, finCompare.totalEquity))}</td>
                                                         </tr>
                                                     </tbody>
                                                 </table>
@@ -1845,7 +1886,7 @@
                                 </div>
                             )}
 
-                            {/* شاشة بوابة الرفع والمطابقة الموحدة (INGESTION) */}
+                            {/* شاشة بوابة الرفع والمطابقة (INGESTION) */}
                             {currentView === 'ingestion' && (
                                 <div class="space-y-6 fade-in">
                                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -1873,7 +1914,7 @@
                                                 </div>
                                                 <h4 class="text-base font-bold text-slate-900">تحديث واستيراد البيانات من Excel</h4>
                                                 <p class="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                                                    يمكنك استيراد ملف إكسل يحتوي على عدة أشهر لتحديث ميزان المراجعة بالكامل. يجب أن يحتوي الملف على كود الحساب، الاسم، الرصيد، والفترة.
+                                                    استيراد ملف إكسل ميزان المراجعة متعدد الشهور وتوطينه بشكل متطابق مع معايير ومسميات المنصة الموحدة.
                                                 </p>
                                             </div>
 
@@ -1905,7 +1946,7 @@
                                                 إحصائيات وقوة قاعدة البيانات الحالية
                                             </h4>
 
-                                            <div class="grid grid-cols-2 gap-4">
+                                            <div class="grid grid-cols-2 gap-4 font-sans">
                                                 <div class="bg-slate-50 p-4 rounded-xl border border-slate-100">
                                                     <span class="text-[11px] font-bold text-slate-500 block mb-1">عدد الفترات المحاسبية</span>
                                                     <span class="text-lg font-extrabold text-slate-900">{periods.length} فترات تاريخية</span>
@@ -1926,10 +1967,6 @@
                                                     <span class="text-xs font-bold text-emerald-600 block mt-1">متزن بالكامل 100%</span>
                                                 </div>
                                             </div>
-
-                                            <div class="text-xs text-slate-500 leading-relaxed bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                                                <strong>ملاحظة للمدقق:</strong> يتم حفظ بياناتك ومطابقة القيود آلياً بشكل فوري لكل فترة محاسبية في ذاكرة المتصفح.
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1946,8 +1983,7 @@
                                     </div>
 
                                     {/* بطاقات النسب المقارنة */}
-                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                        {/* 1. نسبة السيولة المتداولة */}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
                                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-xs font-bold text-slate-500">نسبة التداول (Current Ratio)</span>
@@ -1957,12 +1993,8 @@
                                                 <span class="text-2xl font-black text-slate-900">{finCurrent.currentRatio}</span>
                                                 <span class="text-xs text-slate-400">مقابل {finCompare.currentRatio} للفترة السابقة</span>
                                             </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                تقيس قدرة الأصول المتداولة للوفاء بالالتزامات المتداولة خلال سنة. المعيار الآمن عموماً هو 1.5 إلى 2.
-                                            </p>
                                         </div>
 
-                                        {/* 2. نسبة السيولة السريعة */}
                                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-xs font-bold text-slate-500">السيولة السريعة (Quick Ratio)</span>
@@ -1972,12 +2004,8 @@
                                                 <span class="text-2xl font-black text-slate-900">{finCurrent.quickRatio}</span>
                                                 <span class="text-xs text-slate-400">مقابل {finCompare.quickRatio} للفترة السابقة</span>
                                             </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                تستثني المخزون نظراً لصعوبة تسييله السريع لتقدير المتانة النقدية الحالية بشكل أدق.
-                                            </p>
                                         </div>
 
-                                        {/* 3. العائد على حقوق الملكية */}
                                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
                                             <div class="flex justify-between items-center">
                                                 <span class="text-xs font-bold text-slate-500">العائد على حقوق الملكية (ROE)</span>
@@ -1987,54 +2015,6 @@
                                                 <span class="text-2xl font-black text-slate-900">{finCurrent.returnOnEquity}%</span>
                                                 <span class="text-xs text-slate-400">مقابل {finCompare.returnOnEquity}% للفترة السابقة</span>
                                             </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                يوضح كفاءة تشغيل واستثمار أموال الملاك والمساهمين لتحقيق صافي أرباح.
-                                            </p>
-                                        </div>
-
-                                        {/* 4. كفاءة تحصيل العملاء DSO */}
-                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-xs font-bold text-slate-500">فترة تحصيل المستحقات والعملاء</span>
-                                                <span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-100">الكفاءة التشغيلية</span>
-                                            </div>
-                                            <div class="flex items-baseline gap-3">
-                                                <span class="text-2xl font-black text-slate-900">{finCurrent.dso} يوم</span>
-                                                <span class="text-xs text-slate-400">مقابل {finCompare.dso} يوم للفترة السابقة</span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                متوسط الأيام اللازمة لتحصيل النقدية من مبيعات الآجل للعملاء.
-                                            </p>
-                                        </div>
-
-                                        {/* 5. دورة بقاء المخزون DIO */}
-                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-xs font-bold text-slate-500">فترة الاحتفاظ بالمخزون</span>
-                                                <span class="bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full border border-amber-100">الكفاءة التشغيلية</span>
-                                            </div>
-                                            <div class="flex items-baseline gap-3">
-                                                <span class="text-2xl font-black text-slate-900">{finCurrent.dio} يوم</span>
-                                                <span class="text-xs text-slate-400">مقابل {finCompare.dio} يوم للفترة السابقة</span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                يقيس متوسط فترة بقاء السلع بالمخازن حتى تصبح بضاعة مباعة.
-                                            </p>
-                                        </div>
-
-                                        {/* 6. دورة التحويل النقدي CCC */}
-                                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-4">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-xs font-bold text-slate-500">دورة التحويل النقدي المجمعة (CCC)</span>
-                                                <span class="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full border">الدورة النقدية</span>
-                                            </div>
-                                            <div class="flex items-baseline gap-3">
-                                                <span class="text-2xl font-black text-slate-900">{finCurrent.ccc} يوم</span>
-                                                <span class="text-xs text-slate-400">مقابل {finCompare.ccc} يوم للفترة السابقة</span>
-                                            </div>
-                                            <p class="text-[11px] text-slate-500 leading-relaxed">
-                                                مجموع الأيام اللازمة لتحويل الاستثمارات بالمخزون والعملاء إلى تدفق نقدي حقيقي.
-                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -2050,8 +2030,8 @@
                                         </div>
                                     </div>
 
-                                    {/* بطاقات تحليل المخاطر الفنية */}
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                    {/* بطاقات تحليل المخاطر */}
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 font-sans">
                                         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
                                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                                                 <i data-lucide="shield-alert" class="text-red-500 w-5 h-5"></i>
@@ -2066,48 +2046,6 @@
                                                     </div>
                                                     <span class="text-xs font-extrabold text-slate-800">{formatCurrency(finCurrent.workingCapital)}</span>
                                                 </div>
-
-                                                <div class="flex justify-between items-center p-4 rounded-xl bg-slate-50 border">
-                                                    <div>
-                                                        <span class="text-xs font-bold text-slate-900 block">معدل تغطية الديون</span>
-                                                        <span class="text-[10px] text-slate-500">إجمالي الالتزامات / حقوق الملكية %</span>
-                                                    </div>
-                                                    <span class="text-xs font-extrabold text-slate-800">{finCurrent.debtToEquity}%</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="p-4 rounded-xl bg-amber-50 text-amber-800 border border-amber-200 text-xs leading-relaxed">
-                                                <strong>تقرير التدقيق:</strong> مستويات السيولة الحالية ممتازة، ومؤشرات الـ Quick Ratio تشير لمتانة النقدية بشكل سليم، مع انخفاض ملحوظ في المديونية التشغيلية.
-                                            </div>
-                                        </div>
-
-                                        {/* مصفوفة المخاطر السريعة المحدثة */}
-                                        <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
-                                            <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
-                                                <i data-lucide="activity" class="text-emerald-500 w-5 h-5"></i>
-                                                مؤشرات الكفاءة التشغيلية المقارنة
-                                            </h4>
-
-                                            <div class="space-y-4">
-                                                <div class="flex justify-between items-center p-4 rounded-xl bg-slate-50 border">
-                                                    <div>
-                                                        <span class="text-xs font-bold text-slate-900 block">دورة تحصيل العملاء DSO</span>
-                                                        <span class="text-[10px] text-slate-500">معدل دوران العملاء التجاريين بالأيام</span>
-                                                    </div>
-                                                    <span class="text-xs font-extrabold text-slate-800">{finCurrent.dso} يوم</span>
-                                                </div>
-
-                                                <div class="flex justify-between items-center p-4 rounded-xl bg-slate-50 border">
-                                                    <div>
-                                                        <span class="text-xs font-bold text-slate-900 block">فترة دوران المخزون DIO</span>
-                                                        <span class="text-[10px] text-slate-500">سرعة تسييل المخزون في السوق</span>
-                                                    </div>
-                                                    <span class="text-xs font-extrabold text-slate-800">{finCurrent.dio} يوم</span>
-                                                </div>
-                                            </div>
-
-                                            <div class="p-4 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200 text-xs leading-relaxed">
-                                                <strong>رأي الإدارة:</strong> دورة التحويل النقدي المقارنة تشير إلى كفاءة مرتفعة في عمليات التحصيل وسرعة دوران السلع، مما يدعم المركز المالي بمرونة إضافية.
                                             </div>
                                         </div>
                                     </div>
@@ -2119,13 +2057,13 @@
                                 <div class="space-y-6 fade-in">
                                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                         <div>
-                                            <h3 class="text-2xl font-extrabold text-slate-900">محاكاة وتنبؤات التدفق النقدي والأرباح</h3>
+                                            <h3 class="text-2xl font-extrabold text-slate-900 font-sans">محاكاة وتنبؤات التدفق النقدي والأرباح</h3>
                                             <p class="text-slate-500 text-xs mt-1">لوحة اختبار افتراضية لمحاكاة أثر التغير في نمو المبيعات ونسبة التكلفة على صافي أرباح الفترة</p>
                                         </div>
                                     </div>
 
                                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                                        {/* أدوات التحكم والتحريك تفاعلياً */}
+                                        {/* أدوات التحكم والتحريك */}
                                         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 space-y-6">
                                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                                                 <i data-lucide="sliders" class="text-emerald-500 w-5 h-5"></i>
@@ -2133,7 +2071,6 @@
                                             </h4>
 
                                             <div class="space-y-5">
-                                                {/* 1. نسبة النمو */}
                                                 <div class="space-y-2">
                                                     <div class="flex justify-between text-xs font-bold">
                                                         <span class="text-slate-600">نسبة النمو المتوقعة في المبيعات:</span>
@@ -2148,42 +2085,9 @@
                                                         class="w-full accent-emerald-500"
                                                     />
                                                 </div>
-
-                                                {/* 2. تكلفة المبيعات */}
-                                                <div class="space-y-2">
-                                                    <div class="flex justify-between text-xs font-bold">
-                                                        <span class="text-slate-600">نسبة تكلفة البضاعة للمبيعات:</span>
-                                                        <span class="text-emerald-600">{simCogsRatio}%</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" 
-                                                        min="20" 
-                                                        max="80" 
-                                                        value={simCogsRatio}
-                                                        onChange={(e) => setSimCogsRatio(parseInt(e.target.value))}
-                                                        class="w-full accent-emerald-500"
-                                                    />
-                                                </div>
-
-                                                {/* 3. المصاريف الإدارية */}
-                                                <div class="space-y-2">
-                                                    <div class="flex justify-between text-xs font-bold">
-                                                        <span class="text-slate-600">نسبة المصاريف الإدارية والتشغيلية:</span>
-                                                        <span class="text-emerald-600">{simOpexRatio}%</span>
-                                                    </div>
-                                                    <input 
-                                                        type="range" 
-                                                        min="10" 
-                                                        max="50" 
-                                                        value={simOpexRatio}
-                                                        onChange={(e) => setSimOpexRatio(parseInt(e.target.value))}
-                                                        class="w-full accent-emerald-500"
-                                                    />
-                                                </div>
                                             </div>
                                         </div>
 
-                                        {/* نتائج المحاكاة المقارنة تفاعلياً */}
                                         <div class="bg-white p-8 rounded-2xl shadow-sm border border-slate-200/80 lg:col-span-2 space-y-6">
                                             <h4 class="text-sm font-bold text-slate-900 flex items-center gap-2">
                                                 <i data-lucide="line-chart" class="text-emerald-500 w-5 h-5"></i>
@@ -2194,25 +2098,6 @@
                                                 <div class="bg-slate-50 p-5 rounded-xl border space-y-2">
                                                     <span class="text-xs font-bold text-slate-500">المبيعات المقدرة تحت السيناريو</span>
                                                     <h5 class="text-lg font-black text-slate-900">{formatCurrency(simulatedSales)}</h5>
-                                                    <span class="text-[10px] text-slate-400 block">الفعلي الحالي: {formatCurrency(finCurrent.netSales)}</span>
-                                                </div>
-
-                                                <div class="bg-slate-50 p-5 rounded-xl border space-y-2">
-                                                    <span class="text-xs font-bold text-slate-500">تكلفة البضاعة المقدرة</span>
-                                                    <h5 class="text-lg font-black text-slate-900">{formatCurrency(simulatedCogs)}</h5>
-                                                    <span class="text-[10px] text-slate-400 block">الفعلي الحالي: {formatCurrency(finCurrent.totalCogs)}</span>
-                                                </div>
-
-                                                <div class="bg-slate-50 p-5 rounded-xl border space-y-2">
-                                                    <span class="text-xs font-bold text-slate-500">مجمل ربح السيناريو المتوقع</span>
-                                                    <h5 class="text-lg font-black text-emerald-600">{formatCurrency(simulatedGrossProfit)}</h5>
-                                                    <span class="text-[10px] text-slate-400 block">الفعلي الحالي: {formatCurrency(finCurrent.grossProfit)}</span>
-                                                </div>
-
-                                                <div class="bg-slate-50 p-5 rounded-xl border space-y-2">
-                                                    <span class="text-xs font-bold text-slate-500">صافي ربح السيناريو المقدر</span>
-                                                    <h5 class="text-lg font-black text-indigo-600">{formatCurrency(simulatedNetIncome)}</h5>
-                                                    <span class="text-[10px] text-slate-400 block">الفعلي الحالي: {formatCurrency(finCurrent.netIncome)}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -2308,7 +2193,7 @@
                         <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 fade-in p-4">
                             <div class="bg-white rounded-2xl shadow-xl border w-full max-w-lg overflow-hidden">
                                 <div class="bg-slate-900 p-6 text-white flex justify-between items-center">
-                                    <h4 class="text-sm font-bold">إدخال أو تعديل رصيد ميزان المراجعة</h4>
+                                    <h4 class="text-sm font-bold font-sans">إدخال أو تعديل رصيد ميزان المراجعة</h4>
                                     <button onClick={() => setShowBalanceModal(false)} class="text-slate-400 hover:text-white font-bold">&times;</button>
                                 </div>
                                 <form 
@@ -2331,7 +2216,7 @@
                                             setBalances(prev => [...prev, newEntry]);
                                         }
 
-                                        alert("تم تسجيل وتحديث الرصيد بنجاح لتنعكس التعديلات على القوائم فورياً!");
+                                        showToast("تم تسجيل وتحديث الرصيد بنجاح!", "success");
                                         setShowBalanceModal(false);
                                     }} 
                                     class="p-6 space-y-4"
@@ -2350,7 +2235,7 @@
                                     </div>
 
                                     <div class="space-y-1">
-                                        <label class="text-xs font-bold text-slate-600">الفترة المحاسبية المراد تفعيلها والتعديل عليها:</label>
+                                        <label class="text-xs font-bold text-slate-600">الفترة المحاسبية:</label>
                                         <select 
                                             value={balanceForm.periodId} 
                                             onChange={(e) => setBalanceForm({ ...balanceForm, periodId: e.target.value })}
